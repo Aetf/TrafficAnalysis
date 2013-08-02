@@ -49,9 +49,14 @@
                             <TextBox Name="FluxFilePath"
                                      Width="300" Height="20"
                                      Background="{x:Null}" BorderThickness="0"
-                                     TextAlignment="Left"/>
+                                     TextAlignment="Left"
+                                     MouseDoubleClick="FluxFilePath_MouseDoubleClick">
+                                <TextBox.ToolTip>
+                                    <Label>双击以进行浏览</Label>
+                                </TextBox.ToolTip>
+                            </TextBox>
                         </Border>
-                        <Button Content="浏览" Margin="5 0 0 0" Click="Button_Click" Height="20"/>
+                        <!--<Button Content="浏览" Margin="5 0 0 0" Click="Button_Click" Height="20"/>-->
                     </StackPanel>
                 </RibbonGroup>
                 <RibbonGroup Header="操作">
