@@ -4,7 +4,7 @@
         xmlns:Custom="http://schemas.microsoft.com/winfx/2006/xaml/presentation/ribbon"
         Title="TrafficAnalysis" Height="600" Width="800"
         WindowStartupLocation="CenterScreen">
-        <Grid>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -45,7 +45,12 @@
                 <RibbonGroup Header="流量文件" >
                     <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
                         <Label Content="路径:" />
-                        <TextBox Name="FluxFilePath" Width="300"  Height="20" TextAlignment="Left"/>
+                        <Border CornerRadius="3" Height="20" BorderThickness="1" BorderBrush="#FF737070">
+                            <TextBox Name="FluxFilePath"
+                                     Width="300" Height="20"
+                                     Background="{x:Null}" BorderThickness="0"
+                                     TextAlignment="Left"/>
+                        </Border>
                         <Button Content="浏览" Margin="5 0 0 0" Click="Button_Click" Height="20"/>
                     </StackPanel>
                 </RibbonGroup>
@@ -56,5 +61,13 @@
             </RibbonTab>
         </Ribbon>
 
+        <TabControl Grid.Row="1" Style="{StaticResource VsTab}"
+                    TabStripPlacement="Bottom">
+            <TabControl.Resources>
+                <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}" />
+            </TabControl.Resources>
+            <TabItem Header="实时监控"></TabItem>
+            <TabItem Header="文件分析"></TabItem>
+        </TabControl>
     </Grid>
 </RibbonWindow>
