@@ -1,0 +1,4 @@
+*.suo
+TrafficAnalysis/bin/
+TrafficAnalysis/obj/
+*.Designer.cs
