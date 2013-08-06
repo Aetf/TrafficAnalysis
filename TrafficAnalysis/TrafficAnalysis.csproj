@@ -33,12 +33,46 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DynamicDataDisplay">
-      <HintPath>D:\SystemLib\DynamicDataDisplay Future\Release\DynamicDataDisplay.dll</HintPath>
+    <Reference Include="Controls">
+      <HintPath>D:\SystemLib\WPFToolkit\CustomControls\Release\Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicDataDisplay, Version=0.3.2.0, Culture=neutral, PublicKeyToken=5b7d744a7263923f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\SystemLib\DynamicDataDisplay v0.3.47\Release\DynamicDataDisplay.dll</HintPath>
+    </Reference>
+    <Reference Include="PcapDotNet.Core">
+      <HintPath>D:\SystemLib\PcapDotNet\PcapDotNet.Binaries.0.10.0.67076.x86\PcapDotNet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="PcapDotNet.Packets">
+      <HintPath>D:\SystemLib\PcapDotNet\PcapDotNet.Binaries.0.10.0.67076.x86\PcapDotNet.Packets.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpPcap">
+      <HintPath>D:\SystemLib\SharpPcap-4.2.0\Release\SharpPcap.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Controls.DataVisualization.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Controls.Ribbon" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,8 +95,10 @@
     </ApplicationDefinition>
     <Compile Include="Auxiliary.cs" />
     <Compile Include="ChartEx\Mapping.cs" />
+    <Compile Include="ColorGen.cs" />
     <Compile Include="DeviceDataSource\Device.cs" />
-    <Compile Include="DeviceDataSource\DeviceStatisticsHelper.cs" />
+    <Compile Include="DeviceDataSource\MonitorPcap.cs" />
+    <Compile Include="DeviceStatisticsHelper.cs" />
     <Compile Include="DeviceDataSource\IStatisticsSource.cs" />
     <Compile Include="FlexStackPanel.cs" />
     <Compile Include="ChartEx\RemovableDataSource.cs" />

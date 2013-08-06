@@ -1,15 +1,17 @@
 ﻿<RibbonWindow x:Class="TrafficAnalysis.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:Custom="http://schemas.microsoft.com/winfx/2006/xaml/presentation/ribbon"
+        xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
+        xmlns:a="clr-namespace:TrafficAnalysis"
+        xmlns:aui="clr-namespace:TrafficAnalysis.UI"
         Title="TrafficAnalysis" Height="600" Width="800"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen" Loaded="RibbonWindow_Loaded" Closed="RibbonWindow_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Ribbon Name="WinRibbon" SelectedIndex="2">
+        <Ribbon Name="WinRibbon" SelectedIndex="1">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu KeyTip="F">
                     <RibbonApplicationMenuItem Header="Options" />
@@ -33,12 +35,14 @@
             </RibbonTab>
             <RibbonTab Header="设备" KeyTip="D">
                 <RibbonGroup Header="设备列表">
-                    <ListBox Name="DeviceList" Style="{StaticResource DeviceList}" Width="500">
+                    <ListBox Name="DeviceList" Style="{StaticResource DeviceList}" Width="500" SelectionChanged="DeviceList_SelectionChanged">
                     </ListBox>
                 </RibbonGroup>
                 <RibbonGroup Header="设备选项">
-                    <RibbonCheckBox Label="显示在监控中"></RibbonCheckBox>
-                    <RibbonCheckBox Label="捕获该网卡"></RibbonCheckBox>
+                    <RibbonCheckBox Name="ShowInMonitor"  Label="显示在监控中"
+                                    Checked="ShowInMonitor_Checked" Unchecked="ShowInMonitor_Unchecked" />
+                    <RibbonCheckBox Name="CaptureThis"  Label="捕获该网卡"
+                                    Checked="CaptureThis_Checked" Unchecked="CaptureThis_Unchecked" />
                 </RibbonGroup>
             </RibbonTab>
             <RibbonTab Header="流量文件" KeyTip="X">
@@ -71,7 +75,47 @@
             <TabControl.Resources>
                 <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}" />
             </TabControl.Resources>
-            <TabItem Header="实时监控"></TabItem>
+            <TabItem Header="监控">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <aui:FlexStackPanel x:Name="CentralGraph" Grid.Row="0"
+                                        Orientation="Horizontal" StretchDirection="Both" />
+                        
+                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
+                                  Height="3" Background="LightGray"
+                                  ShowsPreview="False"/>
+                    <aui:FlexStackPanel Grid.Row="2"
+                                Orientation="Horizontal" StretchDirection="Both">
+                        <d3:ChartPlotter Name="BpsChart" Margin="5" LegendVisibility="Collapsed">
+                            <d3:ChartPlotter.MainVerticalAxis>
+                                <d3:VerticalIntegerAxis />
+                            </d3:ChartPlotter.MainVerticalAxis>
+                            <d3:ChartPlotter.MainHorizontalAxis>
+                                <d3:HorizontalTimeSpanAxis Name="BpsXAxis" ShowMinorTicks="False" />
+                            </d3:ChartPlotter.MainHorizontalAxis>
+                            
+                            <d3:Header FontFamily="Arial" Content="BPS" />
+                            <d3:VerticalAxisTitle FontFamily="Arial" Content="Bit per Second" />
+                        </d3:ChartPlotter>
+                        <d3:ChartPlotter Name="PpsChart" Margin="5" LegendVisibility="Collapsed">
+                            <d3:ChartPlotter.MainVerticalAxis>
+                                <d3:VerticalIntegerAxis />
+                            </d3:ChartPlotter.MainVerticalAxis>
+                            <d3:ChartPlotter.MainHorizontalAxis>
+                                <d3:HorizontalTimeSpanAxis Name="PpsXAxis" ShowMinorTicks="False" />
+                            </d3:ChartPlotter.MainHorizontalAxis>
+
+                            <d3:Header FontFamily="Arial" Content="PPS" />
+                            <d3:VerticalAxisTitle FontFamily="Arial" Content="Packet per Second" />
+                        </d3:ChartPlotter>
+                    </aui:FlexStackPanel>
+                </Grid>
+            </TabItem>
             <TabItem Header="文件分析"></TabItem>
         </TabControl>
     </Grid>
