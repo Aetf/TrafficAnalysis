@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.DataVisualization.Charting;
 using System.Windows.Controls.Ribbon;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Controls.DataVisualization.Charting;
 using Microsoft.Research.DynamicDataDisplay;
+using Microsoft.Research.DynamicDataDisplay.ViewportRestrictions;
+using TrafficAnalysis.ChartEx;
 using TrafficAnalysis.DeviceDataSource;
 using TrafficAnalysis.Util;
+using Microsoft.Research.DynamicDataDisplay.Charts;
 
 namespace TrafficAnalysis
 {
@@ -33,6 +29,8 @@ namespace TrafficAnalysis
         private Dictionary<string, DeviceStatisticsHelper> helpers = new Dictionary<string, DeviceStatisticsHelper>();
 
         private DispatcherTimer refreshTimer;
+
+        private double chartwidthfactor = 50;
         #endregion
 
         public MainWindow()
@@ -44,8 +42,59 @@ namespace TrafficAnalysis
 
         private void InitGraphs()
         {
+            #region 监控
+            // Set horizontal and vertical clip factor to different values.
+            ViewportRestrictionCallback enlargeCallback = (proposedBound) =>
+                {
+                    if (proposedBound.IsEmpty)
+                    {
+                        return proposedBound;
+                    }
+                    return CoordinateUtilities.RectZoom(proposedBound, proposedBound.GetCenter(), 1, 1.05);
+                };
+            BpsChart.ViewportClipToBoundsEnlargeFactor = 1;
+            PpsChart.ViewportClipToBoundsEnlargeFactor = 1;
+            BpsChart.Viewport.FitToViewRestrictions
+                .Add(new InjectionDelegateRestriction(BpsChart.Viewport, enlargeCallback));
+            PpsChart.Viewport.FitToViewRestrictions
+                .Add(new InjectionDelegateRestriction(PpsChart.Viewport, enlargeCallback));
+
+            // Disable zoom and pan
+            BpsChart.Children.Remove(BpsChart.MouseNavigation);
+            BpsChart.Children.Remove(BpsChart.KeyboardNavigation);
+            BpsChart.Children.Remove(BpsChart.HorizontalAxisNavigation);
+            BpsChart.Children.Remove(BpsChart.VerticalAxisNavigation);
+            BpsChart.DefaultContextMenu.RemoveFromPlotter();
+
+            PpsChart.Children.Remove(PpsChart.MouseNavigation);
+            PpsChart.Children.Remove(PpsChart.KeyboardNavigation);
+            PpsChart.Children.Remove(PpsChart.HorizontalAxisNavigation);
+            PpsChart.Children.Remove(PpsChart.VerticalAxisNavigation);
+            PpsChart.DefaultContextMenu.RemoveFromPlotter();
+
             ResetLineChart(BpsChart);
             ResetLineChart(PpsChart);
+            #endregion
+
+            #region 文件分析
+            TimeLine.Children.Remove(TimeLine.MouseNavigation);
+            //TimeLine.Children.Add(new HorizontalMouseNavigation());
+            var datetimeaxis = TimeLine.MainHorizontalAxis as HorizontalDateTimeAxis;
+
+            SelectionLine lineMin = new SelectionLine
+            {
+                LineStrokeThickness = 3.5,
+                XTextMapping = val => datetimeaxis.ConvertFromDouble(val).ToLongTimeString()
+            };
+            SelectionLine lineMax = new SelectionLine
+            {
+                LineStrokeThickness = 3.5,
+                XTextMapping = val => datetimeaxis.ConvertFromDouble(val).ToLongTimeString()
+            };
+            
+            TimeLine.Children.Add(lineMin);
+            TimeLine.Children.Add(lineMax);
+            #endregion
         }
 
         private void ResetLineChart(ChartPlotter plotter)
@@ -66,15 +115,29 @@ namespace TrafficAnalysis
 
         private void ReadStatistics(object sender, EventArgs e)
         {
+            double tbps = 0;
+            double tpps = 0;
+            int cnt = 0;
+
             foreach (var devName in helpers.Keys)
             {
                 if (helpers[devName].Shown)
                 {
                     StatisticsInfo info = Ssource.Statistics[devName];
                     helpers[devName].ChangeTo(info);
+
+                    tbps += info.Bps;
+                    tpps += info.Pps;
+                    cnt++;
                 }
             }
             AdjustChart();
+
+            tbps /= cnt * 1e6; // Mbps
+            tpps /= cnt;
+
+            bpsLabel.Content = tbps.ToString();
+            ppsLabel.Content = tpps.ToString();
         }
 
         /// <summary>
@@ -114,6 +177,7 @@ namespace TrafficAnalysis
             if (CentralGraph.Children.Count == 0)
             {
                 refreshTimer.Stop();
+                DeviceStatisticsHelper.startTime = -1;
             }
         }
 
@@ -126,8 +190,9 @@ namespace TrafficAnalysis
             CentralGraph.Children.Add(chart);
 
             // Line Chart
-            BpsChart.AddLineGraph(helpers[des.Name].Bps, ColorGen.GetColor(), 2, des.FriendlyName);
-            PpsChart.AddLineGraph(helpers[des.Name].Pps, ColorGen.GetColor(), 2, des.FriendlyName);
+            Color c = ColorGen.GetColor();
+            BpsChart.AddLineGraph(helpers[des.Name].Bps, c, 2, des.FriendlyName);
+            PpsChart.AddLineGraph(helpers[des.Name].Pps, c, 2, des.FriendlyName);
             BpsChart.FitToView();
             PpsChart.FitToView();
         }
@@ -197,7 +262,7 @@ namespace TrafficAnalysis
             pchart = new LabeledPieChart();
             pchart.Style = (Style)FindResource("compactLabeledPieChart");
             ps = new LabeledPieSeries();
-            pchart.Title = "Application Layer";
+            pchart.Title = info.Device.FriendlyName + " - Application Layer";
             ps.IndependentValuePath = "Key";
             ps.DependentValuePath = "Value";
             ps.ItemsSource = info.ApplicationLayer;
@@ -222,6 +287,7 @@ namespace TrafficAnalysis
             foreach(DeviceDes des in Ssource.DeviceList)
             {
                 helpers[des.Name] = new DeviceStatisticsHelper(BpsChart, PpsChart, des);
+                helpers[des.Name].MaxPoints = chartwidthfactor;
             }
 
             if (Ssource.DeviceList.Count != 0)

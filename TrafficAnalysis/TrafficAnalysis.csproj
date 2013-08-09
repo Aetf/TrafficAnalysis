@@ -61,6 +61,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\SystemLib\DynamicDataDisplay v0.3.47\Release\DynamicDataDisplay.dll</HintPath>
     </Reference>
+    <Reference Include="PacketDotNet, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\SystemLib\SharpPcap-4.2.0\Release\PacketDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="PcapDotNet.Core">
       <HintPath>D:\SystemLib\PcapDotNet\PcapDotNet.Binaries.0.10.0.67076.x86\PcapDotNet.Core.dll</HintPath>
     </Reference>
@@ -94,15 +98,28 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Auxiliary.cs" />
+    <Compile Include="ChartEx\HorizontalMouseNavigation.cs" />
     <Compile Include="ChartEx\Mapping.cs" />
+    <Compile Include="ChartEx\NoneLabelProvider.cs" />
+    <Compile Include="ChartEx\SelectionLine.xaml.cs">
+      <DependentUpon>SelectionLine.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ColorGen.cs" />
     <Compile Include="DeviceDataSource\Device.cs" />
+    <Compile Include="DeviceDataSource\FileAnalyze.cs" />
+    <Compile Include="DeviceDataSource\IStatisticFileSource.cs" />
     <Compile Include="DeviceDataSource\MonitorPcap.cs" />
+    <Compile Include="DeviceDataSource\PacketAnalyze.cs" />
+    <Compile Include="DeviceDataSource\StatisticsInfo.cs" />
     <Compile Include="DeviceStatisticsHelper.cs" />
     <Compile Include="DeviceDataSource\IStatisticsSource.cs" />
     <Compile Include="FlexStackPanel.cs" />
     <Compile Include="ChartEx\RemovableDataSource.cs" />
     <Compile Include="VsTab.cs" />
+    <Page Include="ChartEx\SelectionLine.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

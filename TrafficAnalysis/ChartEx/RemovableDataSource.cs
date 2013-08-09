@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Threading;
-using System.Linq;
 using Microsoft.Research.DynamicDataDisplay.DataSources;
 
 namespace TrafficAnalysis.ChartEx
@@ -71,10 +70,13 @@ namespace TrafficAnalysis.ChartEx
 
 		private readonly ObservableCollection<T> collection = new ObservableCollection<T>();
 
-		public ObservableCollection<T> Collection
-		{
-			get { return collection; }
-		}
+        public int Count
+        {
+            get
+            {
+                return collection.Count;
+            }
+        }
 
 		public void AppendMany(IEnumerable<T> data)
 		{

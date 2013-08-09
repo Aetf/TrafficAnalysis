@@ -8,6 +8,7 @@
              xmlns:cc="clr-namespace:Controls.DataVisualization.Charting;assembly=Controls"
              xmlns:a="clr-namespace:TrafficAnalysis"
              xmlns:aui="clr-namespace:TrafficAnalysis.UI"
+             xmlns:ac="clr-namespace:TrafficAnalysis.ChartEx"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Style x:Key="BigFont" TargetType="Label">
@@ -18,6 +19,8 @@
         <Style TargetType="TextBlock" x:Key="SmallText">
             <Setter Property="FontSize" Value="10" />
         </Style>
+
+        <ac:NoneLabelProviderInt x:Key="NoneLabelProviderInt" />
 
         <Style x:Key="DeviceList" TargetType="{x:Type ListBox}">
             <Setter Property="ItemTemplate">

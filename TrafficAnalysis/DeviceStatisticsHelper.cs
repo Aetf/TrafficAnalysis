@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Research.DynamicDataDisplay;
-using Microsoft.Research.DynamicDataDisplay.Charts;
 using TrafficAnalysis.ChartEx;
 using TrafficAnalysis.DeviceDataSource;
 using TrafficAnalysis.Util;
@@ -107,9 +102,14 @@ namespace TrafficAnalysis
             
             set
             {
-                if (value)
+                //if (value)
+                //{
+                //    startTime = DateTime.Now;
+                //    startTime = 0;
+                //}
+                if (startTime < 0)
                 {
-                    startTime = DateTime.Now;
+                    startTime = 0;
                 }
                 shown = value;
             }
@@ -118,9 +118,11 @@ namespace TrafficAnalysis
 
         public bool CaptureThis { get; set; }
 
-        public RemovableDataSource<Tuple<TimeSpan, double>> Bps { get; set; }
+        public double MaxPoints { get; set; }
 
-        public RemovableDataSource<Tuple<TimeSpan, double>> Pps { get; set; }
+        public RemovableDataSource<Tuple<double, double>> Bps { get; set; }
+
+        public RemovableDataSource<Tuple<double, double>> Pps { get; set; }
 
         public ObservableCollection<NotifyKeyValuePairSL> NetworkLayer { get; set; }
 
@@ -128,37 +130,43 @@ namespace TrafficAnalysis
 
         public ObservableCollection<NotifyKeyValuePairSL> ApplicationLayer { get; set; }
 
-        private DateTime startTime;
+        //private DateTime startTime;
+        public static double startTime = -1;
 
         public DeviceStatisticsHelper(ChartPlotter bps, ChartPlotter pps, DeviceDes des)
         {
             Device = des;
             Shown = false;
             CaptureThis = false;
-            Pps = new RemovableDataSource<Tuple<TimeSpan, double>>();
-            Bps = new RemovableDataSource<Tuple<TimeSpan, double>>();
+            Pps = new RemovableDataSource<Tuple<double, double>>();
+            Bps = new RemovableDataSource<Tuple<double, double>>();
             NetworkLayer = new ObservableCollection<NotifyKeyValuePairSL>();
             TransportLayer = new ObservableCollection<NotifyKeyValuePairSL>();
             ApplicationLayer = new ObservableCollection<NotifyKeyValuePairSL>();
             BpsPlotter = bps;
             PpsPlotter = pps;
+            MaxPoints = 50;
 
-            var axis = BpsPlotter.MainHorizontalAxis as HorizontalTimeSpanAxis;
-            Bps.SetXYMapping(tp => new Point(axis.ConvertToDouble(tp.Item1), tp.Item2));
-            axis = PpsPlotter.MainHorizontalAxis as HorizontalTimeSpanAxis;
-            Pps.SetXYMapping(tp => new Point(axis.ConvertToDouble(tp.Item1), tp.Item2));
+            //var axis = BpsPlotter.MainHorizontalAxis as HorizontalTimeSpanAxis;
+            //Bps.SetXYMapping(tp => new Point(axis.ConvertToDouble(tp.Item1), tp.Item2));
+            Bps.SetXYMapping(tp => new Point(tp.Item1, tp.Item2));
+            //axis = PpsPlotter.MainHorizontalAxis as HorizontalTimeSpanAxis
+            Pps.SetXYMapping(tp => new Point(tp.Item1, tp.Item2));
         }
 
         public void ChangeTo(StatisticsInfo info)
         {
             Bps.SuspendUpdate();
             Pps.SuspendUpdate();
-            DateTime cur = DateTime.Now;
-            Bps.Add(Tuple.Create(cur - startTime, info.Bps));
-            Pps.Add(Tuple.Create(cur - startTime, info.Pps));
+            //DateTime cur = DateTime.Now;
+            //Bps.Add(Tuple.Create(cur - startTime, info.Bps));
+            //Pps.Add(Tuple.Create(cur - startTime, info.Pps));
+            Bps.Add(Tuple.Create(startTime, info.Bps));
+            Pps.Add(Tuple.Create(startTime, info.Pps));
+            startTime++;
 
             //TODO: Check whether chart has enough points. if true, remove the first one.
-            if (false)
+            if (Bps.Count > MaxPoints)
             {
                 Bps.RemoveAt(0);
                 Pps.RemoveAt(0);

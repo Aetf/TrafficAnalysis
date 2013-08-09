@@ -2,15 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using PcapDotNet.Core;
 using PcapDotNet.Packets;
-using PcapDotNet.Packets.Ethernet;
-using PcapDotNet.Packets.Http;
-using PcapDotNet.Packets.IpV4;
-using TrafficAnalysis.Util;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -45,16 +39,15 @@ namespace TrafficAnalysis.DeviceDataSource
             InitCapture();
         }
 
-        public void StartCapture(DeviceDes des)
+        public void StartCapture(DeviceDes des, string dumpPath = null)
         {
-            StartCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)));
+            StartCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)), dumpPath);
         }
 
         public void StopCapture(DeviceDes des)
         {
             StopCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)));
         }
-
 
         #endregion
 
@@ -88,7 +81,7 @@ namespace TrafficAnalysis.DeviceDataSource
             ExtraInfos[des.Name] = new DeviceExtraInfo();
         }
 
-        protected void StartCapture(LivePacketDevice dev)
+        protected void StartCapture(LivePacketDevice dev, string dumppath = null)
         {
             if (dev == null)
                 return;
@@ -99,24 +92,53 @@ namespace TrafficAnalysis.DeviceDataSource
             ExtraInfos[dev.Name].BackgroundThread.IsBackground = true;
             ExtraInfos[dev.Name].CaptureCancellation = new CancellationTokenSource();
 
-            ThreadPool.QueueUserWorkItem(new WaitCallback(state =>
+            if (dumppath == null)
             {
-                CancellationToken token = (CancellationToken)state;
-                // Open device
-                using (PacketCommunicator communicator = dev.Open(
-                    65535, PacketDeviceOpenAttributes.Promiscuous,
-                    250
-                    ))
+                ThreadPool.QueueUserWorkItem(new WaitCallback(state =>
                 {
-                    while (!token.IsCancellationRequested)
+                    CancellationToken token = (CancellationToken)state;
+                    // Open device
+                    using (PacketCommunicator communicator = dev.Open(
+                        65535, PacketDeviceOpenAttributes.Promiscuous,
+                        250
+                        ))
                     {
-                        communicator.ReceivePackets(200, packet =>
+                        while (!token.IsCancellationRequested)
                         {
-                            OnPacketArrivaled(packet, dev);
-                        });
+                            communicator.ReceivePackets(200, packet =>
+                            {
+                                OnPacketArrivaled(packet, dev);
+                            });
+                        }
                     }
-                }
-            }), ExtraInfos[dev.Name].CaptureCancellation.Token);
+                }), ExtraInfos[dev.Name].CaptureCancellation.Token);
+            }
+            else
+            {
+                ThreadPool.QueueUserWorkItem(new WaitCallback(state =>
+                {
+                    CancellationToken token = (CancellationToken)state;
+                    // Open device
+                    using (PacketCommunicator communicator = dev.Open(
+                        65535, PacketDeviceOpenAttributes.Promiscuous,
+                        250
+                        ))
+                    {
+                        using (PacketDumpFile dumpFile = communicator.OpenDump(dumppath))
+                        {
+                            while (!token.IsCancellationRequested)
+                            {
+                                communicator.ReceivePackets(200, packet =>
+                                {
+                                    dumpFile.Dump(packet);
+                                    OnPacketArrivaled(packet, dev);
+                                });
+                            }
+                        }
+                    }
+                }), ExtraInfos[dev.Name].CaptureCancellation.Token);
+            }
+            
         }
 
         protected void StopCapture(LivePacketDevice dev)
@@ -194,7 +216,7 @@ namespace TrafficAnalysis.DeviceDataSource
 
                         totbit += pk.Length * 8;
 
-                        SortPacket(ourStat, pk);
+                        PacketAnalyze.SortPacket(ourStat, pk);
                     }
 
                     double delay = (latest - earlist).TotalMilliseconds;
@@ -202,62 +224,6 @@ namespace TrafficAnalysis.DeviceDataSource
                     ourStat.Pps = (ulong)(ourQueue.Count * 1000 / delay);
 
                     _Statistics[dev.Name] = ourStat;
-                }
-            }
-        }
-
-        protected void SortPacket(StatisticsInfo ourStat, Packet pk)
-        {
-            if (pk.DataLink.Kind == DataLinkKind.Ethernet)
-            {
-                EthernetDatagram ed = pk.Ethernet;
-                // Network layer
-                switch (ed.EtherType)
-                {
-                case EthernetType.Arp:
-                    ourStat.NetworkLayer.Increment("ARP");
-                    break;
-                case EthernetType.PointToPointProtocol:
-                    ourStat.NetworkLayer.Increment("PPP");
-                    break;
-                case EthernetType.IpV4:
-                    ourStat.NetworkLayer.Increment("IPv4");
-                    break;
-                case EthernetType.IpV6:
-                    ourStat.NetworkLayer.Increment("IPv6");
-                    break;
-                default:
-                    ourStat.NetworkLayer.Increment("Others");
-                    break;
-                }
-
-                // Transport Layer, only IPv4 is supported
-                if (ed.EtherType == EthernetType.IpV4)
-                {
-                    IpV4Datagram ip4d = ed.IpV4;
-                    if (ip4d.Udp != null && ip4d.Udp.IsValid)
-                    {
-                        ourStat.TransportLayer.Increment("UDP");
-                    }
-                    else if (ip4d.Tcp != null && ip4d.Tcp.IsValid)
-                    {
-                        ourStat.TransportLayer.Increment("TCP");
-                    }
-                    else
-                    {
-                        ourStat.TransportLayer.Increment("Others");
-                    }
-
-                    // Application Layer
-                    HttpDatagram httpdata = null;
-                    if (ip4d.Tcp != null && (httpdata = ip4d.Tcp.Http) != null)
-                    {
-                        ourStat.ApplicationLayer.Increment("HTTP");
-                    }
-                    else
-                    {
-                        ourStat.ApplicationLayer.Increment("Others");
-                    }
                 }
             }
         }
