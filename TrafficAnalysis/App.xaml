@@ -12,8 +12,12 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Style x:Key="BigFont" TargetType="Label">
-            <Setter Property="FontSize" Value="38" />
+            <Setter Property="FontSize" Value="48" />
             <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+
+        <Style x:Key="SmallFont" TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
         </Style>
 
         <Style TargetType="TextBlock" x:Key="SmallText">

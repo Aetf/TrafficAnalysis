@@ -133,11 +133,13 @@ namespace TrafficAnalysis
             }
             AdjustChart();
 
-            tbps /= cnt * 1e6; // Mbps
+            tbps /= cnt;
             tpps /= cnt;
 
-            bpsLabel.Content = tbps.ToString();
-            ppsLabel.Content = tpps.ToString();
+            FormatBpsSpeed(tbps);
+            FormatPpsSpeed(tpps);
+            //bpsLabel.Content = tbps.ToString();
+            //ppsLabel.Content = tpps.ToString();
         }
 
         /// <summary>
@@ -146,6 +148,44 @@ namespace TrafficAnalysis
         private void AdjustChart()
         {
 
+        }
+
+        static private string[] bpsUnit = new string[]{"bps", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps"};
+        private void FormatBpsSpeed(double bps)
+        {
+#if DEBUG
+            Console.WriteLine("bps:" + bps);
+#endif
+            int multiper = 0;
+            while (bps > 1000)
+            {
+                bps /= 1000;
+                multiper++;
+            }
+            int i = (int) bps;
+            int r = (int) ((bps - i) * 100);
+            bpsLabel1.Content = i.ToString();
+            bpsLabel2.Content = "." + r.ToString("D2");
+            bpsLabel3.Content = bpsUnit[multiper];
+        }
+
+        static private string[] ppsUnit = new string[]{"pps", "Kpps", "Mpps", "Gpps", "Tpps", "Ppps", "Epps"};
+        private void FormatPpsSpeed(double pps)
+        {
+#if DEBUG
+            Console.WriteLine("pps:" + pps);
+#endif
+            int multiper = 0;
+            while (pps > 1000)
+            {
+                pps /= 1000;
+                multiper++;
+            }
+            int i = (int)pps;
+            int r = (int) ((pps - i) * 100);
+            ppsLabel1.Content = i.ToString();
+            ppsLabel2.Content = "." + r.ToString("D2");
+            ppsLabel3.Content = ppsUnit[multiper];
         }
 
         #endregion

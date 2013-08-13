@@ -24,13 +24,35 @@
             </Ribbon.ApplicationMenu>
 
             <RibbonTab Header="实时" KeyTip="R">
-                <RibbonGroup Header="Mbps">
-                    <Label Style="{StaticResource BigFont}" Name="bpsLabel" Content="N/A" 
-                           Width="200" HorizontalContentAlignment="Center"/>
+                <RibbonGroup Header="bit/sec">
+                    <Canvas Width="113" Height="66">
+                        <Label Style="{StaticResource BigFont}" Name="bpsLabel1"
+                               Canvas.Top="-9" Canvas.Left="0" Padding="0" HorizontalContentAlignment="Left"
+                               Content="N/A" />
+                        <Label Style="{StaticResource SmallFont}" Name="bpsLabel2"
+                                   Canvas.Bottom="0" Canvas.Right="55"
+                                   Padding="0"
+                                   Content="N/A" />
+                        <Label Style="{StaticResource SmallFont}" Name="bpsLabel3"
+                                   Canvas.Bottom="0" Canvas.Right="2" HorizontalContentAlignment="Right"
+                                   Padding="0" Width="50"
+                                   Content="bps" />
+                    </Canvas>
                 </RibbonGroup>
-                <RibbonGroup Header="pps">
-                    <Label Style="{StaticResource BigFont}" Name="ppsLabel" Content="N/A"
-                           Width="100" HorizontalContentAlignment="Center"/>
+                <RibbonGroup Header="packet/sec">
+                    <Canvas Width="113" Height="66">
+                        <Label Style="{StaticResource BigFont}" Name="ppsLabel1"
+                               Canvas.Top="-9" Canvas.Left="0" Padding="0" HorizontalContentAlignment="Left"
+                               Content="N/A" />
+                        <Label Style="{StaticResource SmallFont}" Name="ppsLabel2"
+                                   Canvas.Bottom="0" Canvas.Right="55"
+                                   Padding="0"
+                                   Content="N/A" />
+                        <Label Style="{StaticResource SmallFont}" Name="ppsLabel3"
+                                   Canvas.Bottom="0" Canvas.Right="2" HorizontalContentAlignment="Right"
+                                   Padding="0" Width="50"
+                                   Content="pps" />
+                    </Canvas>
                 </RibbonGroup>
                 <RibbonGroup Header="捕获控制">
                     <Label Content="捕获网卡：" />
@@ -76,7 +98,7 @@
             </RibbonTab>
         </Ribbon>
 
-        <TabControl Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="1"
+        <TabControl Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="0"
                     TabStripPlacement="Bottom">
             <TabControl.Resources>
                 <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}" />
