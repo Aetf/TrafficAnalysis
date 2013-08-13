@@ -78,7 +78,7 @@ namespace TrafficAnalysis.DeviceDataSource
             Statistics[des.Name] = new StatisticsInfo(0, 0);
 
             // Create extra info object for the device.
-            ExtraInfos[des.Name] = new DeviceExtraInfo();
+            ExtraInfos[des.Name] = new DeviceControlBlock();
         }
 
         protected void StartCapture(LivePacketDevice dev, string dumppath = null)
@@ -171,7 +171,7 @@ namespace TrafficAnalysis.DeviceDataSource
         protected void BackgroundThread(Object o)
         {
             LivePacketDevice dev = o as LivePacketDevice;
-            DeviceExtraInfo info = ExtraInfos[dev.Name];
+            DeviceControlBlock info = ExtraInfos[dev.Name];
 
             while (!info.BackgroundThreadStop)
             {
@@ -235,9 +235,9 @@ namespace TrafficAnalysis.DeviceDataSource
         /// <summary>
         /// Extra information used when capturing
         /// </summary>
-        private Dictionary<string, DeviceExtraInfo> ExtraInfos = new Dictionary<string, DeviceExtraInfo>();
+        private Dictionary<string, DeviceControlBlock> ExtraInfos = new Dictionary<string, DeviceControlBlock>();
 
-        class DeviceExtraInfo
+        class DeviceControlBlock
         {
             /// <summary>
             /// When true the background thread will terminate
