@@ -233,17 +233,23 @@ namespace TrafficAnalysis.DeviceDataSource
             bpsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
             ppsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
 
+            int delta = 15;
             for (int i = 1; i != plist.Count; i++)
             {
                 // preprocess for range query
                 presum.Add(presum[i - 1] + plist[i]);
 
-                // bps and pps calc
-                TimeSpan x = plist[i].Timestamp - Earliest;
-                double b = presum[i].TotalLen / x.TotalSeconds;
-                double p = (i + 1) / x.TotalSeconds;
-                bpsList.Add(new KeyValuePair<TimeSpan, double>(x, b));
-                ppsList.Add(new KeyValuePair<TimeSpan, double>(x, p));
+                // instantaneous bps and pps calc
+                if (i >= delta)
+                {
+                    TimeSpan dur = plist[i].Timestamp - plist[i - delta].Timestamp;
+                    TimeSpan x = plist[i].Timestamp - Earliest;
+                    double b = plist[i].Length / dur.TotalSeconds;
+                    double p = delta / dur.TotalSeconds;
+                    bpsList.Add(new KeyValuePair<TimeSpan, double>(x, b));
+                    ppsList.Add(new KeyValuePair<TimeSpan, double>(x, p));
+                }
+                
             }
         }
 
