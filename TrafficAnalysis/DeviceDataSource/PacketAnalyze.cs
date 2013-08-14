@@ -11,7 +11,8 @@ namespace TrafficAnalysis.DeviceDataSource
         public static CategorizeInfo SortPacket(PcapDotNet.Packets.Packet raw)
         {
             // Get a packet from raw data.
-            Packet packet = Packet.ParsePacket(LinkLayers.Ethernet, raw.Buffer);
+            // Be a little lazy and assume that only Ethernet DLL protcol is used.
+            EthernetPacket packet = Packet.ParsePacket(LinkLayers.Ethernet, raw.Buffer) as EthernetPacket;
 
             CategorizeInfo info = new CategorizeInfo
             {
@@ -21,26 +22,23 @@ namespace TrafficAnalysis.DeviceDataSource
             };
 
             #region Network Layer
-            if (packet.Extract(typeof(ARPPacket)) != null)
+            switch (packet.Type)
             {
+            case EthernetPacketType.Arp:
                 info.NetworkLayer.Increment("ARP");
-            }
-            else if (packet.Extract(typeof(IPv4Packet)) != null)
-            {
+                break;
+            case EthernetPacketType.IpV4:
                 info.NetworkLayer.Increment("IPv4");
-            }
-            else if (packet.Extract(typeof(IPv6Packet)) != null)
-            {
+                break;
+            case EthernetPacketType.IpV6:
                 info.NetworkLayer.Increment("IPv6");
-            }
-            else if (packet.Extract(typeof(ICMPv4Packet)) != null
-                    || packet.Extract(typeof(ICMPv6Packet)) != null)
-            {
-                info.NetworkLayer.Increment("ICMP");
-            }
-            else
-            {
+                break;
+            case EthernetPacketType.Loop:
+                info.NetworkLayer.Increment("Loop");
+                break;
+            default:
                 info.NetworkLayer.Increment("Others");
+                break;
             }
             #endregion
 

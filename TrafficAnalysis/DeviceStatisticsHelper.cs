@@ -158,14 +158,11 @@ namespace TrafficAnalysis
         {
             Bps.SuspendUpdate();
             Pps.SuspendUpdate();
-            //DateTime cur = DateTime.Now;
-            //Bps.Add(Tuple.Create(cur - startTime, info.Bps));
-            //Pps.Add(Tuple.Create(cur - startTime, info.Pps));
+
             Bps.Add(Tuple.Create(startTime, info.Bps));
             Pps.Add(Tuple.Create(startTime, info.Pps));
             startTime++;
 
-            //TODO: Check whether chart has enough points. if true, remove the first one.
             if (Bps.Count > MaxPoints)
             {
                 Bps.RemoveAt(0);

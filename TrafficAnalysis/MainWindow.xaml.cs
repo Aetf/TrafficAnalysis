@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.DataVisualization.Charting;
 using System.Windows.Controls.Ribbon;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Controls.DataVisualization.Charting;
 using Microsoft.Research.DynamicDataDisplay;
+using Microsoft.Research.DynamicDataDisplay.Charts;
+using Microsoft.Research.DynamicDataDisplay.DataSources;
 using Microsoft.Research.DynamicDataDisplay.ViewportRestrictions;
 using TrafficAnalysis.ChartEx;
 using TrafficAnalysis.DeviceDataSource;
 using TrafficAnalysis.Util;
-using Microsoft.Research.DynamicDataDisplay.Charts;
 
 namespace TrafficAnalysis
 {
@@ -26,11 +29,17 @@ namespace TrafficAnalysis
         #region Fields
         private IStatisticsSource Ssource = new MonitorPcap();
 
+        private IFileStatisticSource Fsource = new FileAnalyze();
+
         private Dictionary<string, DeviceStatisticsHelper> helpers = new Dictionary<string, DeviceStatisticsHelper>();
 
         private DispatcherTimer refreshTimer;
 
         private double chartwidthfactor = 50;
+
+        SelectionLine lineMin;
+
+        SelectionLine lineMax;
         #endregion
 
         public MainWindow()
@@ -78,22 +87,36 @@ namespace TrafficAnalysis
 
             #region 文件分析
             TimeLine.Children.Remove(TimeLine.MouseNavigation);
-            //TimeLine.Children.Add(new HorizontalMouseNavigation());
-            var datetimeaxis = TimeLine.MainHorizontalAxis as HorizontalDateTimeAxis;
+            var axis = TimeLine.MainHorizontalAxis as HorizontalTimeSpanAxis;
 
-            SelectionLine lineMin = new SelectionLine
+            lineMin = new SelectionLine
             {
                 LineStrokeThickness = 3.5,
-                XTextMapping = val => datetimeaxis.ConvertFromDouble(val).ToLongTimeString()
+                XTextMapping = val => axis.ConvertFromDouble(val).ToString(@"hh\:mm\:ss\.fff")
             };
-            SelectionLine lineMax = new SelectionLine
+            lineMin.PropertyChanged += SelLineMin_Changed;
+
+            lineMax = new SelectionLine
             {
                 LineStrokeThickness = 3.5,
-                XTextMapping = val => datetimeaxis.ConvertFromDouble(val).ToLongTimeString()
+                XTextMapping = val => axis.ConvertFromDouble(val).ToString(@"hh\:mm\:ss\.fff")
             };
-            
+            lineMax.PropertyChanged += SelLineMax_Changed;
+
             TimeLine.Children.Add(lineMin);
             TimeLine.Children.Add(lineMax);
+
+            //TimeLineInnerPps.ViewportBindingConverter = new InjectedPlotterHorizontalSyncConverter(TimeLineInnerPps);
+            //TimeLineInnerPps.SetViewportBinding = true;
+            // Note:
+            // Above two lines do not work as excepted.
+            // TimeLineInnerPps.Viewport.Visible stuck to default value (0,0)-> 1,1
+            // after SetViewportBinding = true
+            // I haven't figured out the reason.
+            // However in TwoIndependentAxis project in DevSample, they work properly.
+            // This is a workaround that just use default converter with scaled Y axis.
+            TimeLineInnerPps.SetViewportBinding = true;
+            
             #endregion
         }
 
@@ -109,9 +132,16 @@ namespace TrafficAnalysis
             refreshTimer.Tick += ReadStatistics;
         }
 
+        private void InitFileAnlyze()
+        {
+            anaAppSeries.ItemsSource = new Dictionary<string, double>();
+            anaNetSeries.ItemsSource = new Dictionary<string, double>();
+            anaTransSeries.ItemsSource = new Dictionary<string, double>();
+        }
+
         #endregion
 
-        #region Refresh
+        #region Analyze
 
         private void ReadStatistics(object sender, EventArgs e)
         {
@@ -148,6 +178,32 @@ namespace TrafficAnalysis
         private void AdjustChart()
         {
 
+        }
+
+        /// <summary>
+        /// Calculate and refresh file info for file analyze
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        private void CalculateInfo(TimeSpan from, TimeSpan to)
+        {
+            if (!Fsource.FileLoaded)
+                return;
+
+            try
+            {
+                StatisticsInfo info = Fsource.Query(from, to);
+#if DEBUG
+                Console.WriteLine(info.ToString());
+#endif
+                anaNetSeries.ItemsSource = info.NetworkLayer;
+                anaTransSeries.ItemsSource = info.TransportLayer;
+                anaAppSeries.ItemsSource = info.ApplicationLayer;
+            }
+            catch (InvalidOperationException)
+            {
+                // File	not loaded. Should not happen. Ignore.
+            }
         }
 
         static private string[] bpsUnit = new string[]{"bps", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps"};
@@ -334,6 +390,7 @@ namespace TrafficAnalysis
                 DeviceList.SelectedIndex = 0;
 
             InitStatistics();
+            InitFileAnlyze();
 
             InitGraphs();
         }
@@ -402,6 +459,80 @@ namespace TrafficAnalysis
         {
             DeviceDes des = DeviceList.SelectedValue as DeviceDes;
             helpers[des.Name].CaptureThis = false;
+        }
+
+        private void RibbonButton_Click(object sender, RoutedEventArgs e)
+        {
+            string path = FluxFilePath.Text;
+            try
+            {
+                Fsource.Load(path);
+
+                TimeLineInnerPps.Children.RemoveAll<LineGraph>();
+                TimeLine.Children.RemoveAll<LineGraph>();
+
+                var axis = TimeLine.MainHorizontalAxis as HorizontalTimeSpanAxis;
+                double w = axis.ConvertToDouble(Fsource.Latest - Fsource.Earliest);
+                double hb = Fsource.BpsList.Max(pair => pair.Value);
+                double hp = Fsource.PpsList.Max(pair => pair.Value);
+
+                TimeLine.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hb)));
+                TimeLineInnerPps.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hp)));
+
+                var bpsds = new EnumerableDataSource<KeyValuePair<TimeSpan, double>>(Fsource.BpsList);
+                bpsds.SetXYMapping(pair => new Point(axis.ConvertToDouble(pair.Key), pair.Value));
+                var ppsds = new EnumerableDataSource<KeyValuePair<TimeSpan, double>>(Fsource.PpsList);
+                ppsds.SetXYMapping(pair => new Point(axis.ConvertToDouble(pair.Key), pair.Value));
+
+                TimeLine.AddLineGraph(bpsds, Colors.Blue, 2, "bps");
+                TimeLineInnerPps.AddLineGraph(ppsds, Colors.Red, 2, "pps");
+
+                TimeLineInnerPps.SetVerticalTransform(0, 0, hb, hp);
+                // Must do a reset here, after both viewport has properly configed, otherwise inner viewport will stick in (0,0)->1,1
+                //TimeLineInnerPps.SetViewportBinding = false;
+            }
+            catch (ArgumentException)
+            {
+                MessageBox.Show("非法的文件格式或文件不存在！");
+            }
+        }
+
+        private void RibbonSplitButton_Click(object sender, RoutedEventArgs e)
+        {
+            return;
+        }
+
+        private void SelLineMin_Changed(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("CurrentValue"))
+            {
+                RefreshSelectedInterval();
+            }
+        }
+
+        private void SelLineMax_Changed(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("CurrentValue"))
+            {
+                RefreshSelectedInterval();
+            }
+        }
+
+        private void RefreshSelectedInterval()
+        {
+            var datetimeaxis = TimeLine.MainHorizontalAxis as HorizontalTimeSpanAxis;
+            TimeSpan t1 = datetimeaxis.ConvertFromDouble(lineMin.CurrentValue);
+            TimeSpan t2 = datetimeaxis.ConvertFromDouble(lineMax.CurrentValue);
+            if (t2 < t1)
+            {
+                TimeSpan t3 = t1;
+                t1 = t2;
+                t2 = t3;
+            }
+
+            FromTime.Text = t1.ToString(@"hh\:mm\:ss\.fff");
+            ToTime.Text = t2.ToString(@"hh\:mm\:ss\.fff");
+            CalculateInfo(t1, t2);
         }
 
         #endregion

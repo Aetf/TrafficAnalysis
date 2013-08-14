@@ -92,13 +92,13 @@
                     </StackPanel>
                 </RibbonGroup>
                 <RibbonGroup Header="操作">
-                    <RibbonButton Label="载入"/>
-                    <RibbonSplitButton Label="导出"/>
+                    <RibbonButton Label="载入" Click="RibbonButton_Click"/>
+                    <RibbonSplitButton Label="导出" Click="RibbonSplitButton_Click"/>
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
 
-        <TabControl Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="0"
+        <TabControl Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="1"
                     TabStripPlacement="Bottom">
             <TabControl.Resources>
                 <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}" />
@@ -158,11 +158,20 @@
                     
                     <d3:ChartPlotter x:Name="TimeLine" Grid.Row="0" Margin="5 5 5 5" LegendVisibility="Collapsed">
                         <d3:ChartPlotter.MainVerticalAxis>
-                            <d3:VerticalIntegerAxis ShowMinorTicks="False"/>
+                            <d3:VerticalAxis ShowMinorTicks="False"/>
                         </d3:ChartPlotter.MainVerticalAxis>
                         <d3:ChartPlotter.MainHorizontalAxis>
-                            <d3:HorizontalDateTimeAxis x:Name="TimeLineXAxis" />
+                            <d3:HorizontalTimeSpanAxis x:Name="TimeLineXAxis" />
                         </d3:ChartPlotter.MainHorizontalAxis>
+
+                        <d3:VerticalAxisTitle Content="Bit/sec" Placement="Left" />
+                        <d3:InjectedPlotter x:Name="TimeLineInnerPps" Background="Aqua"
+                                            SetViewportBinding="True" >
+                            <d3:VerticalAxis ShowMinorTicks="False" Placement="Right"/>
+                            <d3:VerticalAxisTitle Content="Packet/sec" Placement="Right" />
+                        </d3:InjectedPlotter>
+                        <d3:AxisNavigation Placement="Right"/>
+                        
                     </d3:ChartPlotter>
 
                     <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"

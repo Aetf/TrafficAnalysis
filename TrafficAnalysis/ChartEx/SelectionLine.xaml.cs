@@ -361,6 +361,10 @@ namespace TrafficAnalysis.ChartEx
         #endregion
 
         #region public double CurrentValue
+        /// <summary>
+        /// Current selected value in data coordiate.
+        /// This can be either an X or a Y value, depending on the Orientation property
+        /// </summary>
         public double CurrentValue
         {
             get
@@ -478,7 +482,7 @@ namespace TrafficAnalysis.ChartEx
           "LineStrokeDashArray",
           typeof(DoubleCollection),
           typeof(SelectionLine),
-          new FrameworkPropertyMetadata(DoubleCollectionHelper.Create(3, 3)));
+          new FrameworkPropertyMetadata(DoubleCollectionExtension.Create(3, 3)));
 
         #endregion
 

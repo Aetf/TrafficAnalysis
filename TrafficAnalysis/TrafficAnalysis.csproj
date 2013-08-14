@@ -98,16 +98,18 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Auxiliary.cs" />
+    <Compile Include="ChartEx\AxisNavigationConstrained.cs" />
     <Compile Include="ChartEx\HorizontalMouseNavigation.cs" />
     <Compile Include="ChartEx\Mapping.cs" />
     <Compile Include="ChartEx\NoneLabelProvider.cs" />
     <Compile Include="ChartEx\SelectionLine.xaml.cs">
       <DependentUpon>SelectionLine.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ChartEx\InjectedPlotterHorizontalSyncConverter.cs" />
     <Compile Include="ColorGen.cs" />
     <Compile Include="DeviceDataSource\Device.cs" />
     <Compile Include="DeviceDataSource\FileAnalyze.cs" />
-    <Compile Include="DeviceDataSource\IStatisticFileSource.cs" />
+    <Compile Include="DeviceDataSource\IFileStatisticSource.cs" />
     <Compile Include="DeviceDataSource\MonitorPcap.cs" />
     <Compile Include="DeviceDataSource\PacketAnalyze.cs" />
     <Compile Include="DeviceDataSource\StatisticsInfo.cs" />

@@ -14,8 +14,32 @@ namespace TrafficAnalysis.DeviceDataSource
         }
 
         #region Members of IFileStatisticsSource
+
+        #region public IList<KeyValuePair<TimeSpan, double>> BpsList
+        private IList<KeyValuePair<TimeSpan, double>> bpsList = new List<KeyValuePair<TimeSpan, double>>();
+        public IList<KeyValuePair<TimeSpan, double>> BpsList { get { return bpsList; } }
+        #endregion
+
+        #region public IList<KeyValuePair<TimeSpan, double>> PpsList
+        private IList<KeyValuePair<TimeSpan, double>> ppsList = new List<KeyValuePair<TimeSpan, double>>();
+        public IList<KeyValuePair<TimeSpan, double>> PpsList { get { return ppsList; } }
+        #endregion
+
+        #region public bool FileLoaded
+        private bool fileLoaded = false;
+        public bool FileLoaded { get { return fileLoaded; } }
+        #endregion
+
         public void Load(string filepath)
         {
+            // file validation
+            if (false)
+            {
+                throw new ArgumentException("The file is nonexist or not valid");
+            }
+
+            Reset();
+
             OfflinePacketDevice dev = new OfflinePacketDevice(filepath);
 
             // Read all packets from file until EOF
@@ -26,10 +50,31 @@ namespace TrafficAnalysis.DeviceDataSource
 
             plist.Sort();
             Analyze();
+            fileLoaded = true;
+        }
+
+        public void Reset()
+        {
+            plist.Clear();
+            presum.Clear();
+            bpsList.Clear();
+            ppsList.Clear();
+            fileLoaded = false;
+            Earliest = DateTime.MaxValue;
+            Latest = DateTime.MinValue;
+        }
+
+        public StatisticsInfo Query(TimeSpan start, TimeSpan end)
+        {
+            return Query(Earliest + start, Earliest + end);
         }
 
         public StatisticsInfo Query(DateTime start, DateTime end)
         {
+            if (!fileLoaded)
+            {
+                throw new InvalidOperationException("No file has been loaded");
+            }
             // Check range
             if (start < Earliest || start > Latest || end < Earliest || end > Latest)
             {
@@ -87,13 +132,24 @@ namespace TrafficAnalysis.DeviceDataSource
         /// </summary>
         public struct MetaPacket : IComparable<MetaPacket>, IEquatable<MetaPacket>
         {
+            /// <summary>
+            /// the number of bits in the packet
+            /// </summary>
             public long Length;
+
+            /// <summary>
+            /// the time this packet was captured
+            /// </summary>
             public DateTime Timestamp;
+
+            /// <summary>
+            /// this packet's categorized info
+            /// </summary>
             public CategorizeInfo Cinfo;
 
             public MetaPacket(Packet pk)
             {
-                Length = pk.Length;
+                Length = pk.Length * 8;
                 Timestamp = pk.Timestamp;
                 Cinfo = PacketAnalyze.SortPacket(pk);
             }
@@ -165,18 +221,7 @@ namespace TrafficAnalysis.DeviceDataSource
         public DateTime Earliest { get; private set; }
         public DateTime Latest { get; private set; }
 
-        #region public List<MetaPacket> Packets
-        public List<MetaPacket> Packets
-        {
-            get
-            {
-                return plist;
-            }
-        }
         List<MetaPacket> plist = new List<MetaPacket>();
-        #endregion
-
-
         List<RangeMeta> presum = new List<RangeMeta>();
 
         private void Analyze()
@@ -185,9 +230,20 @@ namespace TrafficAnalysis.DeviceDataSource
                 return;
 
             presum.Add(new RangeMeta(plist[0]));
+            bpsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
+            ppsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
+
             for (int i = 1; i != plist.Count; i++)
             {
+                // preprocess for range query
                 presum.Add(presum[i - 1] + plist[i]);
+
+                // bps and pps calc
+                TimeSpan x = plist[i].Timestamp - Earliest;
+                double b = presum[i].TotalLen / x.TotalSeconds;
+                double p = (i + 1) / x.TotalSeconds;
+                bpsList.Add(new KeyValuePair<TimeSpan, double>(x, b));
+                ppsList.Add(new KeyValuePair<TimeSpan, double>(x, p));
             }
         }
 

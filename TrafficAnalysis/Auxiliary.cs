@@ -41,24 +41,48 @@ namespace TrafficAnalysis.Util
             }
             dic[key]++;
         }
+    }
 
-        public static Dictionary<TKey, long> Merge<TKey>(Dictionary<TKey, long> lhs, Dictionary<TKey, long> rhs)
+    public static class DictionaryExtensions
+    {
+        /// <summary>
+        /// Merge two dictionary.
+        /// Entry's value will be add if it exists in both dictionary.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static Dictionary<TKey, long> Merge<TKey>(this Dictionary<TKey, long> lhs, Dictionary<TKey, long> rhs)
         {
             Dictionary<TKey, long> res = new Dictionary<TKey, long>(lhs);
 
             foreach (var key in rhs.Keys)
             {
-                if (!lhs.ContainsKey(key))
+                if (!res.ContainsKey(key))
                 {
-                    lhs[key] = default(long);
+                    res[key] = default(long);
                 }
 
-                lhs[key] += rhs[key];
+                res[key] += rhs[key];
             }
             return res;
         }
 
-        public static Dictionary<TKey, long> Difference<TKey>(Dictionary<TKey, long> lhs, Dictionary<TKey, long> rhs)
+        
+
+        /// <summary>
+        /// Return a new dictionary.
+        /// An entry will be passed to result as is if it only exists in lhs,
+        /// A key present both in lhs and rhs will have an entry in result, its value
+        /// is lhs[key] - rhs[key].
+        /// Entries only exists in rhs won't effect the result.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static Dictionary<TKey, long> Difference<TKey>(this Dictionary<TKey, long> lhs, Dictionary<TKey, long> rhs)
         {
             Dictionary<TKey, long> res = new Dictionary<TKey, long>();
 
@@ -169,11 +193,19 @@ namespace TrafficAnalysis.Util
         }
     }
 
-    public static class DoubleCollectionHelper
+    public static class DoubleCollectionExtension
     {
         public static DoubleCollection Create(params double[] collection)
         {
             return new DoubleCollection(collection);
+        }
+    }
+
+    public static class PlacementExtensions
+    {
+        public static bool IsBottomOrTop(this AxisPlacement placement)
+        {
+            return placement == AxisPlacement.Bottom || placement == AxisPlacement.Top;
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TrafficAnalysis.Util;
+using System.Text;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -71,6 +72,29 @@ namespace TrafficAnalysis.DeviceDataSource
                 ApplicationLayer = new Dictionary<string, long>()
             };
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("BPS: ").Append(Bps.ToString()).Append('\n');
+            sb.Append("PPS: ").Append(Pps.ToString()).Append('\n');
+            sb.Append("NetworkLayer:").Append('\n');
+            foreach (var key in NetworkLayer.Keys)
+            {
+                sb.Append('\t').Append(key).Append("=").Append(NetworkLayer[key]).Append('\n');
+            }
+            sb.Append("TransportLayer:").Append('\n');
+            foreach (var key in TransportLayer.Keys)
+            {
+                sb.Append('\t').Append(key).Append("=").Append(TransportLayer[key]).Append('\n');
+            }
+            sb.Append("ApplicationLayer:").Append('\n');
+            foreach (var key in ApplicationLayer.Keys)
+            {
+                sb.Append('\t').Append(key).Append("=").Append(ApplicationLayer[key]).Append('\n');
+            }
+            return sb.ToString();
+        }
     }
 
     /// <summary>
@@ -97,9 +121,9 @@ namespace TrafficAnalysis.DeviceDataSource
         {
             CategorizeInfo res = new CategorizeInfo();
 
-            res.NetworkLayer = Auxiliary.Merge(lhs.NetworkLayer, rhs.NetworkLayer);
-            res.TransportLayer = Auxiliary.Merge(lhs.TransportLayer, rhs.TransportLayer);
-            res.ApplicationLayer = Auxiliary.Merge(lhs.ApplicationLayer, rhs.ApplicationLayer);
+            res.NetworkLayer = lhs.NetworkLayer.Merge(rhs.NetworkLayer);
+            res.TransportLayer = lhs.TransportLayer.Merge(rhs.TransportLayer);
+            res.ApplicationLayer = lhs.ApplicationLayer.Merge(rhs.ApplicationLayer);
 
             return res;
         }
@@ -108,9 +132,9 @@ namespace TrafficAnalysis.DeviceDataSource
         {
             CategorizeInfo res = new CategorizeInfo();
 
-            res.ApplicationLayer = Auxiliary.Difference(lhs.ApplicationLayer, rhs.ApplicationLayer);
-            res.TransportLayer = Auxiliary.Difference(lhs.TransportLayer, rhs.TransportLayer);
-            res.NetworkLayer = Auxiliary.Difference(lhs.NetworkLayer, rhs.NetworkLayer);
+            res.ApplicationLayer = lhs.ApplicationLayer.Difference(rhs.ApplicationLayer);
+            res.TransportLayer = lhs.TransportLayer.Difference(rhs.TransportLayer);
+            res.NetworkLayer = lhs.NetworkLayer.Difference(rhs.NetworkLayer);
 
             return res;
         }
