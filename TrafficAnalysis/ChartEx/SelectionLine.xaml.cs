@@ -38,6 +38,8 @@ namespace TrafficAnalysis.ChartEx
 
         bool isDraging = false;
 
+        Vector mouseOffset = new Vector();
+
         #region Plotter
 
         protected override void OnPlotterAttached()
@@ -69,23 +71,24 @@ namespace TrafficAnalysis.ChartEx
             {
                 Rect output = Plotter2D.Viewport.Output;
                 Point mousePos = Mouse.GetPosition(this);
+                Point pos = mousePos - mouseOffset;
 
                 if (orientation == Orientation.Vertical)
                 {
-                    if (mousePos.X < output.Left)
-                        mousePos.X = output.Left;
-                    if (mousePos.X > output.Right)
-                        mousePos.X = output.Right;
+                    if (pos.X < output.Left)
+                        pos.X = output.Left;
+                    if (pos.X > output.Right)
+                        pos.X = output.Right;
                 }
                 if (orientation == Orientation.Horizontal)
                 {
-                    if (mousePos.Y < output.Bottom)
-                        mousePos.Y = output.Bottom;
-                    if (mousePos.Y > output.Top)
-                        mousePos.Y = output.Top;
+                    if (pos.Y < output.Bottom)
+                        pos.Y = output.Bottom;
+                    if (pos.Y > output.Top)
+                        pos.Y = output.Top;
                 }
 
-                Position = mousePos;
+                Position = pos;
                 UpdateUIRepresentation();
                 e.Handled = true;
             }
@@ -120,6 +123,9 @@ namespace TrafficAnalysis.ChartEx
             if (hited)
             {
                 isDraging = true;
+
+                mouseOffset = e.GetPosition(parent) - Position;
+
                 CaptureMouse();
             }
         }
@@ -135,13 +141,29 @@ namespace TrafficAnalysis.ChartEx
 
         protected override void OnViewportPropertyChanged(ExtendedPropertyChangedEventArgs e)
         {
-            UpdateUIRepresentation();
+            if (e.PropertyName.Equals("Visible"))
+            {
+                DataRect oldv = (DataRect)e.OldValue;
+                DataRect newv = (DataRect)e.NewValue;
+                if(Orientation == Orientation.Vertical &&
+                    (oldv.XMin != newv.XMin
+                    || oldv.Width != newv.Width))
+                {
+                    UpdateUIRepresentation();
+                    OnPropertyChanged("CurrentValue");
+                }
+                else if(Orientation == Orientation.Horizontal &&
+                    (oldv.YMin != newv.YMin
+                    || oldv.Height != newv.Height))
+                {
+                    UpdateUIRepresentation();
+                    OnPropertyChanged("CurrentValue");
+                }
+            }
         }
 
         private void UpdateUIRepresentation()
         {
-            //var transform = Plotter2D.Viewport.Transform;
-            //Position = Mouse.GetPosition(this).ScreenToData(transform);
             UpdateUIRepresentation(Position);
         }
 
