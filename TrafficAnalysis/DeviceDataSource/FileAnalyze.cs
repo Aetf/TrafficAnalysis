@@ -64,12 +64,12 @@ namespace TrafficAnalysis.DeviceDataSource
             Latest = DateTime.MinValue;
         }
 
-        public StatisticsInfo Query(TimeSpan start, TimeSpan end)
+        public RangeStatisticsInfo Query(TimeSpan start, TimeSpan end)
         {
             return Query(Earliest + start, Earliest + end);
         }
 
-        public StatisticsInfo Query(DateTime start, DateTime end)
+        public RangeStatisticsInfo Query(DateTime start, DateTime end)
         {
             if (!fileLoaded)
             {
@@ -103,10 +103,11 @@ namespace TrafficAnalysis.DeviceDataSource
 
             double seconds = (plist[e].Timestamp - plist[b].Timestamp).TotalSeconds;
 
-            StatisticsInfo info = new StatisticsInfo
+            RangeStatisticsInfo info = new RangeStatisticsInfo
             {
-                Pps = (e - b) / seconds,
-                Bps = rm.TotalLen / seconds,
+                Duration = plist[e].Timestamp - plist[b].Timestamp,
+                TotalLen = rm.TotalLen,
+                TotalCnt = e - b + 1,
                 CInfo = rm.Cinfo
             };
 

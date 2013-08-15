@@ -21,7 +21,7 @@ namespace TrafficAnalysis.DeviceDataSource
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        StatisticsInfo Query(DateTime start, DateTime end);
+        RangeStatisticsInfo Query(DateTime start, DateTime end);
 
         /// <summary>
         /// Relative time
@@ -29,7 +29,7 @@ namespace TrafficAnalysis.DeviceDataSource
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        StatisticsInfo Query(TimeSpan start, TimeSpan end);
+        RangeStatisticsInfo Query(TimeSpan start, TimeSpan end);
 
         /// <summary>
         /// Reset to load a new file.

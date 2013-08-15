@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TrafficAnalysis.Util;
 using System.Text;
+using System;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -138,5 +139,68 @@ namespace TrafficAnalysis.DeviceDataSource
 
             return res;
         }
+    }
+
+    /// <summary>
+    /// Represent statistics information for a duration of time.
+    /// </summary>
+    public struct RangeStatisticsInfo
+    {
+        /// <summary>
+        /// The duration of time
+        /// </summary>
+        public TimeSpan Duration;
+
+        /// <summary>
+        /// Total length of packets during the timespan, in bit
+        /// </summary>
+        public long TotalLen;
+
+        /// <summary>
+        /// Total count of packets during the timespan.
+        /// </summary>
+        public long TotalCnt;
+
+        /// <summary>
+        /// Packet classified by network layer
+        /// </summary>
+        public Dictionary<string, long> NetworkLayer
+        {
+            get
+            {
+                return cinfo.NetworkLayer;
+            }
+        }
+
+        /// <summary>
+        /// Packets classified by transport layer packet type
+        /// </summary>
+        public Dictionary<string, long> TransportLayer
+        {
+            get
+            {
+                return cinfo.TransportLayer;
+            }
+        }
+
+        /// <summary>
+        /// Packets classified by application layer packet type
+        /// </summary>
+        public Dictionary<string, long> ApplicationLayer
+        {
+            get
+            {
+                return cinfo.ApplicationLayer;
+            }
+        }
+
+        #region public CategorizeInfo CInfo
+        private CategorizeInfo cinfo;
+        public CategorizeInfo CInfo
+        {
+            get { return cinfo; }
+            set { cinfo = value; }
+        }
+        #endregion
     }
 }
