@@ -192,10 +192,15 @@ namespace TrafficAnalysis
 
             try
             {
-                StatisticsInfo info = Fsource.Query(from, to);
+                RangeStatisticsInfo info = Fsource.Query(from, to);
 #if DEBUG
                 Console.WriteLine(info.ToString());
 #endif
+
+                TotalPacketsLabel.Content = info.TotalCnt;
+                TotalSizeLabel.Content = info.TotalLen + "Bit" + (info.TotalLen == 1 ? "" : "s");
+                AverageBPS.Content = info.TotalLen / info.Duration.TotalSeconds;
+                AveragePPS.Content = info.TotalCnt / info.Duration.TotalSeconds;
                 anaNetSeries.ItemsSource = info.NetworkLayer;
                 anaTransSeries.ItemsSource = info.TransportLayer;
                 anaAppSeries.ItemsSource = info.ApplicationLayer;
@@ -476,9 +481,6 @@ namespace TrafficAnalysis
                 double hb = Fsource.BpsList.Max(pair => pair.Value);
                 double hp = Fsource.PpsList.Max(pair => pair.Value);
 
-                TimeLine.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hb)));
-                TimeLineInnerPps.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hp)));
-
                 var bpsds = new EnumerableDataSource<KeyValuePair<TimeSpan, double>>(Fsource.BpsList);
                 bpsds.SetXYMapping(pair => new Point(axis.ConvertToDouble(pair.Key), pair.Value));
                 var ppsds = new EnumerableDataSource<KeyValuePair<TimeSpan, double>>(Fsource.PpsList);
@@ -488,8 +490,12 @@ namespace TrafficAnalysis
                 TimeLineInnerPps.AddLineGraph(ppsds, Colors.Red, 2, "pps");
 
                 TimeLineInnerPps.SetVerticalTransform(0, 0, hb, hp);
-                // Must do a reset here, after both viewport has properly configed, otherwise inner viewport will stick in (0,0)->1,1
-                //TimeLineInnerPps.SetViewportBinding = false;
+
+                // I don't why, but the visible will initially become negative if not do this.
+                TimeLine.Viewport.Visible = new DataRect(0, 0, w, hb);
+
+                TimeLine.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hb)));
+                TimeLineInnerPps.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hp)));
             }
             catch (ArgumentException)
             {

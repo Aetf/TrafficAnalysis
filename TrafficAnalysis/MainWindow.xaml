@@ -192,9 +192,13 @@
                         <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <Label Content="统计信息:" />
                             <Label Content="总包数:" />
-                            <Label Name="TotalPacketsLabel"  Content="123" />
+                            <Label Name="TotalPacketsLabel"  Content="N/A" />
                             <Label Content="总大小:" />
-                            <Label Name="TotalSizeLabel"  Content="123 Bit" />
+                            <Label Name="TotalSizeLabel"  Content="N/A" />
+                            <Label Content="平均BPS" />
+                            <Label Name="AverageBPS" Content="N/A" />
+                            <Label Content="平均PPS" />
+                            <Label Name="AveragePPS" Content="N/A" />
                         </StackPanel>
                     </Grid>
 
