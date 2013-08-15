@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using PcapDotNet.Core;
 using PcapDotNet.Packets;
+using TrafficAnalysis.PacketsAnalyze;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -216,7 +217,7 @@ namespace TrafficAnalysis.DeviceDataSource
 
                         totbit += pk.Length * 8;
 
-                        PacketAnalyze.SortPacket(ourStat, pk);
+                        ourStat.CInfo += SingleAnalyzer.SortPacket(pk);
                     }
 
                     double delay = (latest - earlist).TotalMilliseconds;

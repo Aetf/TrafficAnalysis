@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using PcapDotNet.Core;
 using PcapDotNet.Packets;
+using TrafficAnalysis.PacketsAnalyze;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -152,7 +153,7 @@ namespace TrafficAnalysis.DeviceDataSource
             {
                 Length = pk.Length * 8;
                 Timestamp = pk.Timestamp;
-                Cinfo = PacketAnalyze.SortPacket(pk);
+                Cinfo = SingleAnalyzer.SortPacket(pk);
             }
 
             public int CompareTo(MetaPacket other)

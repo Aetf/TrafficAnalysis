@@ -111,7 +111,7 @@
     <Compile Include="DeviceDataSource\FileAnalyze.cs" />
     <Compile Include="DeviceDataSource\IFileStatisticSource.cs" />
     <Compile Include="DeviceDataSource\MonitorPcap.cs" />
-    <Compile Include="DeviceDataSource\PacketAnalyze.cs" />
+    <Compile Include="PacketsAnalyze\PacketAnalyze.cs" />
     <Compile Include="DeviceDataSource\StatisticsInfo.cs" />
     <Compile Include="DeviceStatisticsHelper.cs" />
     <Compile Include="DeviceDataSource\IStatisticsSource.cs" />
