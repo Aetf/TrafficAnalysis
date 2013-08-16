@@ -97,7 +97,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Auxiliary.cs" />
+    <Compile Include="PacketsAnalyze\TCP\TcpConnection.cs" />
+    <Compile Include="PacketsAnalyze\TCP\TcpStructs.cs" />
+    <Compile Include="PacketsAnalyze\TCP\TcpStream.cs" />
+    <Compile Include="PacketsAnalyze\TCP\TcpReassembly.cs" />
+    <Compile Include="Util\Auxiliary.cs" />
     <Compile Include="ChartEx\AxisNavigationConstrained.cs" />
     <Compile Include="ChartEx\HorizontalMouseNavigation.cs" />
     <Compile Include="ChartEx\Mapping.cs" />
@@ -106,18 +110,18 @@
       <DependentUpon>SelectionLine.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChartEx\InjectedPlotterHorizontalSyncConverter.cs" />
-    <Compile Include="ColorGen.cs" />
+    <Compile Include="Util\ColorGen.cs" />
     <Compile Include="DeviceDataSource\Device.cs" />
     <Compile Include="DeviceDataSource\FileAnalyze.cs" />
     <Compile Include="DeviceDataSource\IFileStatisticSource.cs" />
     <Compile Include="DeviceDataSource\MonitorPcap.cs" />
-    <Compile Include="PacketsAnalyze\PacketAnalyze.cs" />
+    <Compile Include="PacketsAnalyze\SingleAnalyzer.cs" />
     <Compile Include="DeviceDataSource\StatisticsInfo.cs" />
     <Compile Include="DeviceStatisticsHelper.cs" />
     <Compile Include="DeviceDataSource\IStatisticsSource.cs" />
-    <Compile Include="FlexStackPanel.cs" />
+    <Compile Include="UI\FlexStackPanel.cs" />
     <Compile Include="ChartEx\RemovableDataSource.cs" />
-    <Compile Include="VsTab.cs" />
+    <Compile Include="UI\VsTab.cs" />
     <Page Include="ChartEx\SelectionLine.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -168,6 +172,7 @@
     <Resource Include="images\stop16.png" />
     <Resource Include="images\stop32.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

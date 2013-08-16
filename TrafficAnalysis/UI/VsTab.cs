@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 
-namespace TrafficAnalysis
+namespace TrafficAnalysis.UI
 {
     static public class ControlEx
     {
