@@ -4,9 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PacketDotNet;
+using System.IO;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
+    /// <summary>
+    /// A TcpStream represents the data stream of a single direction
+    /// during a tcp connection.
+    /// </summary>
     public class TcpStream
     {
         /// <summary>
@@ -16,12 +21,6 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// So we choose linked list here.
         /// </summary>
         internal TcpFrag FragListHead { get; set; }
-
-        private List<Byte> data;
-        public Byte[] Data
-        {
-            get { return data.ToArray(); }
-        }
 
         /// <summary>
         /// true if data belonging to this stream
@@ -36,11 +35,42 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// </summary>
         public bool IsEmpty { get; internal set; }
 
+        /// <summary>
+        /// Indicate whether the stream has finished. i.e. received a FIN
+        /// </summary>
+        public bool IsFinished { get; internal set; }
+
+        private MemoryStream dataStream;
+        public MemoryStream Data
+        {
+            get { return dataStream.ToArray(); }
+        }
+
+        /// <summary>
+        /// Called when the stream is closed. i.e. received a FIN
+        /// </summary>
+        public void OnClose()
+        {
+            IsFinished = true;
+        }
+
+        /// <summary>
+        /// Write a block of bytes to the stream using data read from a buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer to write data from.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin copying bytes to the current stream.</param>
+        /// <param name="count">The maximum number of bytes to write.</param>
+        public void Write(Byte[] buffer, int offset, int count)
+        {
+            dataStream.Write(buffer, offset, count);
+        }
+
         public TcpStream()
         {
             FragListHead = null;
             IsTrunced = false;
             IsEmpty = true;
+            IsFinished = false;
         }
     }
 
@@ -60,12 +90,12 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         public UInt32 len;
 
         /// <summary>
-        /// Actual captured data length
+        /// Flags assosiated
         /// </summary>
-        public UInt32 data_len;
+        public TCPFlags flags;
 
         /// <summary>
-        /// Data array
+        /// Actual captured data array
         /// </summary>
         public Byte[] data;
 

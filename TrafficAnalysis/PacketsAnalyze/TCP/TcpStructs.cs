@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PacketDotNet;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
-    public class TCB
+    public enum TcpState
     {
-        /// <summary>
-        /// Next sequence number excepted to receive.
-        /// </summary>
-        public UInt32 seq;
+        CLOSED, SYN_RECEIVED, SYN_RECEIVED2, SYN_SENT,
+        SYN_ACK_SENT, SYN_ACK_RECEIVED, ESTABLISHED,
+        FIN_WAIT1, FIN_WAIT2, FIN_WAIT3, CLOSING1,
+        CLOSING2, FIN_RECEIVED, CLOSE_WAIT, LAST_ACK, ERROR
     }
 
     /// <summary>

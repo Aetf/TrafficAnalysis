@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.NetworkInformation;
 using PacketDotNet;
+using System.IO;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
@@ -25,11 +26,49 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
 
             return conn;
         }
+
+        private void CloseConnection(TcpConnection conn)
+        {
+            TcpPair pair = conn.Pair;
+            string aip = pair.AIP.ToString().Replace(':', ' ');
+            string bip = pair.BIP.ToString().Replace(':', ' ');
+            string[] name = new string[]
+            {
+                string.Format("S[{1}][{2}]D[{3}][{4}]", aip, pair.APort, bip, pair.BPort),
+                string.Format("S[{1}][{2}]D[{3}][{4}]", bip, pair.BPort, aip, pair.APort)
+            };
+
+            for (int i = 0; i != 2; i++)
+            {
+                FileInfo info = new FileInfo(Path.Combine(new string[] { SavePath, name[i] }));
+                FileStream fs = info.Create();
+                conn.Stream(i).Data.CopyTo(fs);
+                fs.Close();
+            }
+        }
         #endregion
 
+        public string SavePath { get; private set; }
 
-        public TcpReassembly()
+        public TcpReassembly(string saveDir)
         {
+            FileInfo info = new FileInfo(saveDir);
+            if (!info.Exists)
+            {
+                Directory.CreateDirectory(saveDir);
+                SavePath = saveDir;
+            }
+            else
+            {
+                if ((info.Attributes & FileAttributes.Directory) == 0)
+                {
+                    SavePath = info.DirectoryName;
+                }
+                else
+                {
+                    SavePath = info.FullName;
+                }
+            }
         }
 
         /// <summary>
@@ -69,11 +108,11 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             // Check our direction.
             int dir = conn.Pair.AEP.Equals(pair.AEP) ? 0 : 1;
 
-            // Cache some useful object. (Only reference here.)
+            // Cache some useful object, this is packet receiver. (Only reference here.)
             TCB tcb = conn.ControlBlock(dir);
             TcpStream stream = conn.Stream(dir);
 
-            // Whether we have trunced packet
+            // Whether we have trunced the packet
             if (data.Length < length)
             {
                 stream.IsTrunced = true;
@@ -89,23 +128,40 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             }
 
             // now lets get the sequence number stuff figured out
-            if (conn.IsFirst(dir))
+            if (tcb.State == TcpState.CLOSED)
             {
+                // Transmit FSM state.
+                tcb.Transit(flags, true);
+                conn.ControlBlock(1 - dir).Transit(flags, false); // the other side.
+
                 // This is the first time we see sequence number (in this direction)
                 tcb.seq = sequence + length;
-                if (flags.SYN) // we hold next seq, and in case of syn, next seq is sequence+1
-                    tcb.seq++;
+                if (flags.SYN)
+                {
+                    tcb.seq++; // we hold next seq, and in case of syn, next seq is sequence+1
+                }
+                else
+                {
+                    // A new conversation should start with three-way handshake, thus syn should be set
+                    // but if not, it may means that we are dealing with a connection 
+                    // which was captured half way.
+                    stream.IsTrunced = true;
+                }
 
-                writePacketData(conn, dir, data);
+                conn.WritePacketData(dir, data);
                 return;
             }
 
             // If we got here, it means we've seen packets in this connection and direction
-            // check if this packet is in right place
+
+            // transit fsm state.
+            tcb.Transit(flags, true);
+            conn.ControlBlock(1 - dir).Transit(flags, false);
 
             // Warning: I didn't care about sequence number wrap-around in
             // all comparisons of sequence numbers. I'm not sure if this will
             // cause problems.
+            // check if this packet is in right place
             if (sequence < tcb.seq)
             {
                 // the sequence number seems dated,
@@ -145,7 +201,11 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                 if (flags.SYN) tcb.seq++;
 
                 if (data != null)
-                    writePacketData(conn, dir, data);
+                    conn.WritePacketData(dir, data);
+
+                if (flags.FIN)
+                    if (conn.CloseStream(dir))
+                        CloseConnection(conn);
 
                 // done with the packet, see if it cause a fragment to fit.
                 // pass 0 to ack because we don't need to check ack here.
@@ -162,7 +222,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                         seq = sequence,
                         len = length,
                         data = data,
-                        data_len = (UInt32)data.Length,
+                        flags = flags
                     };
                     
                     // Add to fragment list
@@ -178,20 +238,6 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Write data to stream in given direction
-        /// </summary>
-        /// <param name="conn"></param>
-        /// <param name="dir"></param>
-        /// <param name="data"></param>
-        private void writePacketData(TcpConnection conn, int dir, Byte[] data)
-        {
-            TcpStream stream = conn.Stream(dir);
-            stream.IsEmpty = false;
-
-            // TODO: add data.
         }
 
         /// <summary>
@@ -227,14 +273,18 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                         UInt32 new_offset = tcb.seq - cur.seq;
 
                         // Only when we have captured the data
-                        if (cur.data_len > new_offset)
+                        if (cur.data.Length > new_offset)
                         {
-                            Byte[] tmp = new Byte[cur.data_len - new_offset];
+                            Byte[] tmp = new Byte[cur.data.Length - new_offset];
                             Array.Copy(cur.data, new_offset, tmp, 0, tmp.Length);
-                            writePacketData(conn, dir, tmp);
+                            conn.WritePacketData(dir, tmp);
                         }
 
                         tcb.seq += (cur.len - new_offset);
+
+                        if (cur.flags.FIN)
+                            if (conn.CloseStream(dir))
+                                CloseConnection(conn);
                     }
 
 
@@ -258,8 +308,11 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                     tcb.seq += cur.len;
                     if (cur.data != null)
                     {
-                        writePacketData(conn, dir, cur.data);
+                        conn.WritePacketData(dir, cur.data);
                     }
+                    if (cur.flags.FIN)
+                        if (conn.CloseStream(dir))
+                            CloseConnection(conn);
 
                     // Remove it from list.
                     if (prev != null)
@@ -283,7 +336,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                 // seen by the receiving host.
                 // Add a dummy string here.
                 string dummy = String.Format("[%d bytes missing in capture file]", lowestseq - tcb.seq);
-                writePacketData(conn, dir, Encoding.Default.GetBytes(dummy));
+                conn.WritePacketData(dir, Encoding.Default.GetBytes(dummy));
                 tcb.seq = lowestseq;
                 return true;
             }
