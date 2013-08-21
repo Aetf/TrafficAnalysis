@@ -51,7 +51,14 @@ namespace TrafficAnalysis
 
         private void BindingCommands()
         {
-            CommandBindings.Add(new CommandBinding(CloseDocument, (o, e) => pages.Remove((ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter))));
+            CommandBindings.Add(new CommandBinding(CloseDocument,
+                (o, e) => pages.Remove((ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter)),
+                (o, e) =>
+                {
+                    ITabPage page = (ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter);
+                    e.CanExecute = !(page is DetialMonitorPage);
+                }
+                ));
             CommandBindings.Add(new CommandBinding(ActivateDocument, (o, e) =>
             {
                 Tabs.SelectedItem = e.Parameter;
