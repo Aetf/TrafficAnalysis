@@ -71,6 +71,7 @@
     <Reference Include="PcapDotNet.Packets">
       <HintPath>D:\SystemLib\PcapDotNet\PcapDotNet.Binaries.0.10.0.67076.x86\PcapDotNet.Packets.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework.Aero" />
     <Reference Include="SharpPcap">
       <HintPath>D:\SystemLib\SharpPcap-4.2.0\Release\SharpPcap.dll</HintPath>
     </Reference>
@@ -113,6 +114,8 @@
       <DependentUpon>DetialMonitorPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\ComboBoxItemTemplateSelector.cs" />
+    <Compile Include="UI\FrameworkElementExtension.cs" />
+    <Compile Include="UI\ResourceKey.cs" />
     <Compile Include="Util\Auxiliary.cs" />
     <Compile Include="ChartEx\AxisNavigationConstrained.cs" />
     <Compile Include="ChartEx\HorizontalMouseNavigation.cs" />

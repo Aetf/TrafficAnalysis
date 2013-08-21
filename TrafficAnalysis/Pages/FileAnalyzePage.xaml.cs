@@ -173,7 +173,7 @@ namespace TrafficAnalysis.Pages
             Window = window;
 
             Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
-            tItem.Header = System.IO.Path.GetFileName(filePath);
+            tItem.Header = Header;
         }
 
         public void OnTabItemDetaching(MainWindow window, TabItem tItem)
@@ -183,6 +183,7 @@ namespace TrafficAnalysis.Pages
 
         public TabItem TItem { get; private set; }
         public MainWindow Window { get; private set; }
+        public string Header { get { return System.IO.Path.GetFileName(filePath); } }
         #endregion
     }
 }

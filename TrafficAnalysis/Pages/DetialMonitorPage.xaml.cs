@@ -363,7 +363,7 @@ namespace TrafficAnalysis.Pages
             Ssource = window.Ssource;
 
             Window.MonitorTabGroup.Visibility = Visibility.Visible;
-            tItem.Header = "详细监控";
+            tItem.Header = Header;
             Ssource.MonitoringList.DeviceListChanged += MonitoringListChanged;
             Window.Tabs.SelectionChanged += Tabs_SelectionChanged;
         }
@@ -376,6 +376,7 @@ namespace TrafficAnalysis.Pages
 
         public TabItem TItem { get; private set; }
         public MainWindow Window { get; private set; }
+        public string Header { get { return "详细监控"; } }
         #endregion
 
     }

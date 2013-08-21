@@ -99,10 +99,10 @@
             </RibbonTab>
         </Ribbon>
 
-        <TabControl Name="Tabs" Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="0"
+        <TabControl Name="Tabs" Grid.Row="1" Style="{StaticResource VsTab}"
                     TabStripPlacement="Bottom">
             <TabControl.Resources>
-                <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}" />
+                <Style TargetType="TabItem" BasedOn="{StaticResource DocumentTabItem}" />
             </TabControl.Resources>
         </TabControl>
         

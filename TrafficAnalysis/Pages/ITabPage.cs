@@ -30,5 +30,9 @@ namespace TrafficAnalysis.Pages
         /// </summary>
         /// <value>The MainWindow</value>
         MainWindow Window { get; }
+        /// <summary>
+        /// Gets the header that label this page.
+        /// </summary>
+        string Header { get; }
     }
 }

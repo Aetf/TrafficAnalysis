@@ -1,5 +1,13 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Controls;
+using System.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Collections;
+using TrafficAnalysis.Util;
+using System.Linq;
 
 namespace TrafficAnalysis.UI
 {
@@ -19,7 +27,81 @@ namespace TrafficAnalysis.UI
         }
     }
 
-    class VsTab
+    static class OverflowTabHeaderObserver
     {
+        public static readonly DependencyProperty EnableTrackingProperty = DependencyProperty.RegisterAttached
+          ("EnableTracking", typeof(bool), typeof(OverflowTabHeaderObserver),
+            new PropertyMetadata(false, OnEnableTrackingPropertyChanged));
+
+        private static readonly DependencyPropertyDescriptor isOverflowedDesc = DependencyPropertyDescriptor.FromProperty
+          (FlexStackPanel.IsOverflowedProperty, typeof(TabItem));
+
+        private static void OnEnableTrackingPropertyChanged(DependencyObject depObj,
+                                                            DependencyPropertyChangedEventArgs args)
+        {
+            var tabItem = (TabItem)depObj;
+
+            if ((bool)args.OldValue)
+                isOverflowedDesc.RemoveValueChanged(tabItem, OnTabItemOverflowChanged);
+
+            if ((bool)args.NewValue)
+                isOverflowedDesc.AddValueChanged(tabItem, OnTabItemOverflowChanged);
+        }
+
+        private static void OnTabItemOverflowChanged(object sender, EventArgs e)
+        {
+            EnsureActiveTabVisible(((TabItem)sender).VisualAncestors().OfType<TabControl>().First());
+        }
+
+        public static void EnsureActiveTabVisible(TabControl tabControl)
+        {
+            if (tabControl.ItemsSource == null)
+                return;
+
+            var ilist = (IList)tabControl.ItemsSource;
+
+            var containerGenerator = tabControl.ItemContainerGenerator;
+            var tabHeader = (TabItem)containerGenerator.ContainerFromItem(tabControl.SelectedItem);
+
+            if (!FlexStackPanel.GetIsOverflowed(tabHeader) || !tabHeader.IsSelected) return;
+
+            var item = containerGenerator.ItemFromContainer(tabHeader);
+            ilist.Remove(item);
+            ilist.Insert(0, item);
+
+            tabControl.SelectedIndex = 0;
+            UpdateFirstItem(tabControl);
+
+            tabControl.InvalidateMeasure();
+        }
+
+        private static void UpdateFirstItem(TabControl tabControl)
+        {
+            var ilist = (IList)tabControl.ItemsSource;
+
+            if (ilist.Count == 0)
+                return;
+
+            var containerGenerator = tabControl.ItemContainerGenerator;
+
+            var tabItems = ilist.OfType<object>()
+                                .Select(containerGenerator.ContainerFromItem)
+                                .OfType<TabItem>()
+                                .ToList();
+            foreach (var t in tabItems)
+                FlexStackPanel.SetShrinkOnOverflow(t, false);
+
+            FlexStackPanel.SetShrinkOnOverflow(tabItems.First(), true);
+        }
+
+        public static void SetEnableTracking(UIElement element, bool value)
+        {
+            element.SetValue(EnableTrackingProperty, value);
+        }
+
+        public static bool GetEnableTracking(UIElement element)
+        {
+            return (bool)element.GetValue(EnableTrackingProperty);
+        }
     }
 }

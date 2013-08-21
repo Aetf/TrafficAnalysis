@@ -43,6 +43,13 @@ namespace TrafficAnalysis
 
             Tabs.ItemsSource = pages;
             pages.CollectionChanged += pages_CollectionChanged;
+
+            CommandBindings.Add(new CommandBinding(CloseDocument, (o, e) => pages.Remove((ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter))));
+            CommandBindings.Add(new CommandBinding(ActivateDocument, (o, e) =>
+            {
+                Tabs.SelectedItem = e.Parameter;
+                UI.OverflowTabHeaderObserver.EnsureActiveTabVisible(Tabs);
+            }));
         }
 
         #region Initialize
@@ -205,6 +212,9 @@ namespace TrafficAnalysis
         }
         #endregion
 
-        
+        #region Commands
+        public static readonly RoutedCommand CloseDocument = new RoutedCommand();
+        public static readonly RoutedCommand ActivateDocument = new RoutedCommand();
+        #endregion
     }
 }
