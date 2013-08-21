@@ -44,23 +44,31 @@ namespace TrafficAnalysis
             Tabs.ItemsSource = pages;
             pages.CollectionChanged += pages_CollectionChanged;
 
+            BindingCommands();
+        }
+
+        #region Initialize
+
+        private void BindingCommands()
+        {
             CommandBindings.Add(new CommandBinding(CloseDocument, (o, e) => pages.Remove((ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter))));
             CommandBindings.Add(new CommandBinding(ActivateDocument, (o, e) =>
             {
                 Tabs.SelectedItem = e.Parameter;
                 UI.OverflowTabHeaderObserver.EnsureActiveTabVisible(Tabs);
             }));
+            CommandBindings.Add(new CommandBinding(NewFluxAnalyze, (o, e) =>
+            {
+                OpenNewFluxAnalyze();
+            }));
         }
-
-        #region Initialize
-
 
         #endregion
 
         #region Analyze
 
         static private string[] bpsUnit = new string[]{"bps", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps"};
-        private void FormatBpsSpeed(double bps)
+        internal void FormatBpsSpeed(double bps)
         {
 #if DEBUG
             Console.WriteLine("bps:" + bps);
@@ -79,7 +87,7 @@ namespace TrafficAnalysis
         }
 
         static private string[] ppsUnit = new string[]{"pps", "Kpps", "Mpps", "Gpps", "Tpps", "Ppps", "Epps"};
-        private void FormatPpsSpeed(double pps)
+        internal void FormatPpsSpeed(double pps)
         {
 #if DEBUG
             Console.WriteLine("pps:" + pps);
@@ -97,6 +105,28 @@ namespace TrafficAnalysis
             ppsLabel3.Content = ppsUnit[multiper];
         }
 
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// Open a new Flux file to analyze
+        /// </summary>
+        public void OpenNewFluxAnalyze()
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+            Nullable<bool> res = dlg.ShowDialog();
+
+            if (res == true)
+            {
+                FileAnalyzePage page = new FileAnalyzePage(dlg.FileName);
+                pages.Add(page);
+                ActivateDocument.Execute(this, page);
+
+                Tabs.SelectedIndex = pages.Count - 1;
+                page.Load();
+            }
+        }
         #endregion
 
         #region Event Handlers
@@ -195,26 +225,12 @@ namespace TrafficAnalysis
             return;
         }
 
-        private void RibbonApplicationMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-
-            Nullable<bool> res = dlg.ShowDialog();
-
-            if (res == true)
-            {
-                FileAnalyzePage page = new FileAnalyzePage(dlg.FileName);
-                pages.Add(page);
-
-                Tabs.SelectedIndex = pages.Count - 1;
-                page.Load();
-            }
-        }
         #endregion
 
         #region Commands
         public static readonly RoutedCommand CloseDocument = new RoutedCommand();
         public static readonly RoutedCommand ActivateDocument = new RoutedCommand();
+        public static readonly RoutedCommand NewFluxAnalyze = new RoutedCommand();
         #endregion
     }
 }

@@ -12,6 +12,7 @@
         WindowStartupLocation="CenterScreen" Loaded="RibbonWindow_Loaded" Closed="RibbonWindow_Closed">
     <RibbonWindow.Resources>
         <ObjectDataProvider x:Key="DeviceGallerySource" ObjectType="{x:Type ads:MonitorPcap}" MethodName="GetDeviceList"/>
+
     </RibbonWindow.Resources>
         <Grid>
         <Grid.RowDefinitions>
@@ -22,7 +23,7 @@
         <Ribbon Name="WinRibbon" SelectedIndex="1">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu KeyTip="F">
-                    <RibbonApplicationMenuItem Header="打开流量文件" Click="RibbonApplicationMenuItem_Click" />
+                    <RibbonApplicationMenuItem Header="打开流量文件" Command="{x:Static a:MainWindow.NewFluxAnalyze}"/>
                     <RibbonApplicationMenuItem Header="Options" />
                     <RibbonApplicationMenuItem Header="Exit" />
                 </RibbonApplicationMenu>
@@ -99,7 +100,7 @@
             </RibbonTab>
         </Ribbon>
 
-        <TabControl Name="Tabs" Grid.Row="1" Style="{StaticResource VsTab}"
+        <TabControl Name="Tabs" Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="0"
                     TabStripPlacement="Bottom">
             <TabControl.Resources>
                 <Style TargetType="TabItem" BasedOn="{StaticResource DocumentTabItem}" />
