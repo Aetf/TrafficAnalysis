@@ -303,6 +303,8 @@ namespace TrafficAnalysis.Pages
 
             TotalBPS = tbps;
             TotalPPS = tpps;
+            Window.FormatBpsSpeed(tbps);
+            Window.FormatPpsSpeed(tpps);
         }
 
         /// <summary>
