@@ -43,7 +43,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         private MemoryStream dataStream;
         public MemoryStream Data
         {
-            get { return dataStream.ToArray(); }
+            get { return dataStream; }
         }
 
         /// <summary>
