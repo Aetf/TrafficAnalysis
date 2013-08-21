@@ -31,6 +31,23 @@ namespace TrafficAnalysis.DeviceDataSource
                 return _DeviceList;
             }
         }
+        public ReadOnlyCollection<DeviceDes> GetDeviceList() { return DeviceList; }
+        #endregion
+
+        #region public ReadOnlyObservableDeviceList MonitoringList
+        private ObservableCollection<DeviceDes> _MonitoringList = new ObservableCollection<DeviceDes>();
+        private ReadOnlyObservableDeviceList _RMonitoringList;
+        public ReadOnlyObservableDeviceList MonitoringList
+        {
+            get
+            {
+                if (_RMonitoringList == null)
+                {
+                    _RMonitoringList = new ReadOnlyObservableDeviceList(_MonitoringList);
+                }
+                return _RMonitoringList;
+            }
+        }
         #endregion
 
         #region Public Methods
@@ -42,12 +59,18 @@ namespace TrafficAnalysis.DeviceDataSource
 
         public void StartCapture(DeviceDes des, string dumpPath = null)
         {
+            if (_MonitoringList.Contains(des))
+                return;
             StartCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)), dumpPath);
+            _MonitoringList.Add(des);
         }
 
         public void StopCapture(DeviceDes des)
         {
+            if (!_MonitoringList.Contains(des))
+                return;
             StopCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)));
+            _MonitoringList.Remove(des);
         }
 
         #endregion

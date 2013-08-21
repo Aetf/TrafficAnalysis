@@ -26,17 +26,15 @@
 
         <ac:NoneLabelProviderInt x:Key="NoneLabelProviderInt" />
 
+        <DataTemplate x:Key="DeviceItem">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Path=FriendlyName}" FontWeight="Bold" />
+                <TextBlock Text="{Binding Path=Description}" Margin="10 0 0 0" />
+            </StackPanel>
+        </DataTemplate>
+
         <Style x:Key="DeviceList" TargetType="{x:Type ListBox}">
-            <Setter Property="ItemTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=FriendlyName}" FontWeight="Bold" />
-                            <TextBlock Text="{Binding Path=Description}" Margin="10 0 0 0" />
-                        </StackPanel>
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="ItemTemplate" Value="{StaticResource DeviceItem}" />
         </Style>
 
         <!-- Base TabItem style -->

@@ -76,8 +76,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Controls.DataVisualization.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Controls.Ribbon" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -97,10 +99,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DeviceDataSource\ReadOnlyObservableDeviceList.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpConnection.cs" />
+    <Compile Include="PacketsAnalyze\TCP\TcpControlBlock.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpStructs.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpStream.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpReassembly.cs" />
+    <Compile Include="Pages\FileAnalyzePage.xaml.cs">
+      <DependentUpon>FileAnalyzePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ITabPage.cs" />
+    <Compile Include="Pages\DetialMonitorPage.xaml.cs">
+      <DependentUpon>DetialMonitorPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Util\Auxiliary.cs" />
     <Compile Include="ChartEx\AxisNavigationConstrained.cs" />
     <Compile Include="ChartEx\HorizontalMouseNavigation.cs" />
@@ -138,6 +150,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Pages\DetialMonitorPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\FileAnalyzePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

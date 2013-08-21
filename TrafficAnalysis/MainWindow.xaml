@@ -7,23 +7,33 @@
         xmlns:a="clr-namespace:TrafficAnalysis"
         xmlns:aui="clr-namespace:TrafficAnalysis.UI"
         xmlns:aex="clr-namespace:TrafficAnalysis.ChartEx"
+        xmlns:ads="clr-namespace:TrafficAnalysis.DeviceDataSource"
         Title="TrafficAnalysis" Height="600" Width="800"
         WindowStartupLocation="CenterScreen" Loaded="RibbonWindow_Loaded" Closed="RibbonWindow_Closed">
-    <Grid>
+    <RibbonWindow.Resources>
+        <ObjectDataProvider x:Key="DeviceGallerySource" ObjectType="{x:Type ads:MonitorPcap}" MethodName="GetDeviceList"/>
+    </RibbonWindow.Resources>
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Ribbon Name="WinRibbon" SelectedIndex="0">
+        <Ribbon Name="WinRibbon" SelectedIndex="1">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu KeyTip="F">
+                    <RibbonApplicationMenuItem Header="打开流量文件" Click="RibbonApplicationMenuItem_Click" />
                     <RibbonApplicationMenuItem Header="Options" />
                     <RibbonApplicationMenuItem Header="Exit" />
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
 
-            <RibbonTab Header="实时" KeyTip="R">
+            <Ribbon.ContextualTabGroups>
+                <RibbonContextualTabGroup Name="MonitorTabGroup" Header="监控" Visibility="Visible" />
+                <RibbonContextualTabGroup Name="FileAnalyzeTabGroup" Header="文件分析" Visibility="Collapsed" />
+            </Ribbon.ContextualTabGroups>
+
+            <RibbonTab Header="欢迎" KeyTip="W">
                 <RibbonGroup Header="bit/sec">
                     <Canvas Width="113" Height="66">
                         <Label Style="{StaticResource BigFont}" Name="bpsLabel1"
@@ -54,9 +64,23 @@
                                    Content="pps" />
                     </Canvas>
                 </RibbonGroup>
+            </RibbonTab>
+            <RibbonTab Header="捕获" KeyTip="R" ContextualTabGroupHeader="监控">
                 <RibbonGroup Header="捕获控制">
                     <Label Content="捕获网卡：" />
-                    <Label Name="CaptureInterfaceLabel" Content="N/A" />
+                    <ComboBox Name="DeviceCombo" VerticalAlignment="Center" IsEditable="False" IsReadOnly="True"
+                              Width="180" TextSearch.TextPath="FriendlyName"
+                              DataContext="{StaticResource DeviceGallerySource}"  ItemsSource="{Binding}">
+                        <ComboBox.ItemTemplateSelector>
+                            <aui:ComboBoxItemTemplateSelector DropDownTemplate="{StaticResource DeviceItem}">
+                                <aui:ComboBoxItemTemplateSelector.SelectedTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FriendlyName}" Padding="0" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </aui:ComboBoxItemTemplateSelector.SelectedTemplate>
+                            </aui:ComboBoxItemTemplateSelector>
+                        </ComboBox.ItemTemplateSelector>
+                    </ComboBox>
                     <RibbonButton Label="开始" LargeImageSource="images/record32.png" SmallImageSource="images/record16.png"></RibbonButton>
                     <RibbonButton Label="停止" LargeImageSource="images/stop32.png" SmallImageSource="images/stop16.png"></RibbonButton>
                 </RibbonGroup>
@@ -73,162 +97,13 @@
                                     Checked="CaptureThis_Checked" Unchecked="CaptureThis_Unchecked" />
                 </RibbonGroup>
             </RibbonTab>
-            <RibbonTab Header="流量文件" KeyTip="X">
-                <RibbonGroup Header="流量文件" >
-                    <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
-                        <Label Content="路径:" />
-                        <Border CornerRadius="3" Height="20" BorderThickness="1" BorderBrush="#FF737070">
-                            <TextBox Name="FluxFilePath"
-                                     Width="300" Height="20"
-                                     Background="{x:Null}" BorderThickness="0"
-                                     TextAlignment="Left"
-                                     MouseDoubleClick="FluxFilePath_MouseDoubleClick">
-                                <TextBox.ToolTip>
-                                    <Label>双击以进行浏览</Label>
-                                </TextBox.ToolTip>
-                            </TextBox>
-                        </Border>
-                        <!--<Button Content="浏览" Margin="5 0 0 0" Click="Button_Click" Height="20"/>-->
-                    </StackPanel>
-                </RibbonGroup>
-                <RibbonGroup Header="操作">
-                    <RibbonButton Label="载入" Click="RibbonButton_Click"/>
-                    <RibbonSplitButton Label="导出" Click="RibbonSplitButton_Click"/>
-                </RibbonGroup>
-            </RibbonTab>
         </Ribbon>
 
-        <TabControl Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="1"
+        <TabControl Name="Tabs" Grid.Row="1" Style="{StaticResource VsTab}" SelectedIndex="0"
                     TabStripPlacement="Bottom">
             <TabControl.Resources>
                 <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}" />
             </TabControl.Resources>
-            <TabItem Header="详细监控">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <aui:FlexStackPanel x:Name="CentralGraph" Grid.Row="0"
-                                        Orientation="Horizontal" StretchDirection="Both" />
-                        
-                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
-                                  Height="3" Background="LightGray"
-                                  ShowsPreview="False"/>
-                    <aui:FlexStackPanel Grid.Row="2"
-                                Orientation="Horizontal" StretchDirection="Both">
-                        <d3:ChartPlotter Name="BpsChart" Margin="5 5 5 0" LegendVisibility="Collapsed">
-                            <d3:ChartPlotter.MainVerticalAxis>
-                                <d3:VerticalIntegerAxis />
-                            </d3:ChartPlotter.MainVerticalAxis>
-                            <d3:ChartPlotter.MainHorizontalAxis>
-                                <d3:HorizontalIntegerAxis Name="BpsXAxis" Visibility="Hidden"
-                                                          ShowMinorTicks="False"/>
-                            </d3:ChartPlotter.MainHorizontalAxis>
-                            
-                            <d3:Header FontFamily="Arial" Content="BPS" />
-                            <d3:VerticalAxisTitle FontFamily="Arial" Content="Bit per Second" />
-                        </d3:ChartPlotter>
-                        <d3:ChartPlotter Name="PpsChart" Margin="5 5 5 0" LegendVisibility="Collapsed">
-                            <d3:ChartPlotter.MainVerticalAxis>
-                                <d3:VerticalIntegerAxis />
-                            </d3:ChartPlotter.MainVerticalAxis>
-                            <d3:ChartPlotter.MainHorizontalAxis>
-                                <d3:HorizontalIntegerAxis Name="PpsXAxis" Visibility="Hidden"
-                                                          ShowMinorTicks="False" />
-                            </d3:ChartPlotter.MainHorizontalAxis>
-
-                            <d3:Header FontFamily="Arial" Content="PPS" />
-                            <d3:VerticalAxisTitle FontFamily="Arial" Content="Packet per Second" />
-                        </d3:ChartPlotter>
-                    </aui:FlexStackPanel>
-                </Grid>
-            </TabItem>
-            <TabItem Header="文件分析">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="5*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="2*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5*" />
-                    </Grid.RowDefinitions>
-                    
-                    <d3:ChartPlotter x:Name="TimeLine" Grid.Row="0" Margin="5 5 5 5" LegendVisibility="Collapsed">
-                        <d3:ChartPlotter.MainVerticalAxis>
-                            <d3:VerticalAxis ShowMinorTicks="False"/>
-                        </d3:ChartPlotter.MainVerticalAxis>
-                        <d3:ChartPlotter.MainHorizontalAxis>
-                            <d3:HorizontalTimeSpanAxis x:Name="TimeLineXAxis" />
-                        </d3:ChartPlotter.MainHorizontalAxis>
-
-                        <d3:VerticalAxisTitle Content="Bit/sec" Placement="Left" />
-                        <d3:InjectedPlotter x:Name="TimeLineInnerPps" Background="Aqua"
-                                            SetViewportBinding="True" >
-                            <d3:VerticalAxis ShowMinorTicks="False" Placement="Right"/>
-                            <d3:VerticalAxisTitle Content="Packet/sec" Placement="Right" />
-                        </d3:InjectedPlotter>
-                        <d3:AxisNavigation Placement="Right"/>
-                        
-                    </d3:ChartPlotter>
-
-                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
-                                  Height="3" Background="LightGray"
-                                  ShowsPreview="False"/>
-
-                    <Grid Grid.Row="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Label Content="时间段: 从" />
-                            <TextBox Name="FromTime" VerticalContentAlignment="Center">01:11:35.5</TextBox>
-                            <Label Content="到" />
-                            <TextBox Name="ToTime" VerticalContentAlignment="Center">01:15:35.5</TextBox>
-                        </StackPanel>
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Label Content="统计信息:" />
-                            <Label Content="总包数:" />
-                            <Label Name="TotalPacketsLabel"  Content="N/A" />
-                            <Label Content="总大小:" />
-                            <Label Name="TotalSizeLabel"  Content="N/A" />
-                            <Label Content="平均BPS" />
-                            <Label Name="AverageBPS" Content="N/A" />
-                            <Label Content="平均PPS" />
-                            <Label Name="AveragePPS" Content="N/A" />
-                        </StackPanel>
-                    </Grid>
-
-                    <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch"
-                                  Height="3" Background="LightGray"
-                                  ShowsPreview="False"/>
-                    
-                    <aui:FlexStackPanel Grid.Row="4" StretchDirection="Both">
-                        <chart:Chart Title="Network Layer"
-                                     Style="{StaticResource compactChart}" LegendStyle="{StaticResource HiddenLegend}">
-                            <chart:ColumnSeries Name="anaNetSeries" IndependentValuePath="Key" DependentValuePath="Value">
-                            </chart:ColumnSeries>
-                        </chart:Chart>
-                        <cc:LabeledPieChart Title="Transport Layer"
-                                            Style="{StaticResource compactLabeledPieChart}" >
-                            <cc:LabeledPieSeries Name="anaTransSeries" IndependentValuePath="Key" DependentValuePath="Value"
-                                                 PieChartLabelItemTemplate="{StaticResource pieChartLabelDataTemplate}"
-                                                 LabelDisplayMode="AutoMixed">
-                            </cc:LabeledPieSeries>
-                        </cc:LabeledPieChart>
-                        <cc:LabeledPieChart Title="Application Layer"
-                                            Style="{StaticResource compactLabeledPieChart}" >
-                            <cc:LabeledPieSeries Name="anaAppSeries" IndependentValuePath="Key" DependentValuePath="Value"
-                                                 PieChartLabelItemTemplate="{StaticResource pieChartLabelDataTemplate}"
-                                                 LabelDisplayMode="AutoMixed">
-                            </cc:LabeledPieSeries>
-                        </cc:LabeledPieChart>
-                    </aui:FlexStackPanel>
-                </Grid>
-            </TabItem>
         </TabControl>
         
         <Label Name="StatusBar" Grid.Row="2"
