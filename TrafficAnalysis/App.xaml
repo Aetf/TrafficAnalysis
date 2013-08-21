@@ -8,7 +8,7 @@
              xmlns:cc="clr-namespace:Controls.DataVisualization.Charting;assembly=Controls"
              xmlns:a="clr-namespace:TrafficAnalysis"
              xmlns:aui="clr-namespace:TrafficAnalysis.UI"
-             xmlns:ac="clr-namespace:TrafficAnalysis.ChartEx"
+             xmlns:ace="clr-namespace:TrafficAnalysis.ChartEx"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Style x:Key="BigFont" TargetType="Label">
@@ -24,7 +24,7 @@
             <Setter Property="FontSize" Value="10" />
         </Style>
 
-        <ac:NoneLabelProviderInt x:Key="NoneLabelProviderInt" />
+        <ace:NoneLabelProviderInt x:Key="NoneLabelProviderInt" />
 
         <DataTemplate x:Key="DeviceItem">
             <StackPanel Orientation="Horizontal">
