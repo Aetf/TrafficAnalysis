@@ -102,8 +102,10 @@
                 <Style TargetType="TabItem" BasedOn="{StaticResource DocumentTabItem}" />
             </TabControl.Resources>
         </TabControl>
-        
-        <Label Name="StatusBar" Grid.Row="2"
-               Height="19" Background="#FF007ACC" Foreground="White" Content="状态栏" Padding="5 2 0 2"/>
+
+        <StatusBar Name="StatusBar" Grid.Row="2"
+                   Background="#FF007ACC" Foreground="White">
+            <StatusBarItem>状态栏</StatusBarItem>
+        </StatusBar>
     </Grid>
 </RibbonWindow>
