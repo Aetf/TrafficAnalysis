@@ -35,8 +35,16 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate x:Key="DeviceItemLarge">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="{Binding Path=FriendlyName}" FontWeight="Bold" />
+                <TextBlock Text="{Binding Path=Description}" Margin="10 0 0 0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </DataTemplate>
+
         <Style x:Key="DeviceList" TargetType="{x:Type ListBox}">
-            <Setter Property="ItemTemplate" Value="{StaticResource DeviceItem}" />
+            <Setter Property="ItemTemplate" Value="{StaticResource DeviceItemLarge}" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         </Style>
 
         <!--

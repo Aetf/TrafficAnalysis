@@ -20,7 +20,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Ribbon Name="WinRibbon" SelectedIndex="1">
+        <Ribbon Name="WinRibbon" SelectedIndex="0">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu KeyTip="F">
                     <RibbonApplicationMenuItem Header="打开流量文件" Command="{x:Static a:MainWindow.NewFluxAnalyze}"/>
@@ -65,8 +65,16 @@
                                    Content="pps" />
                     </Canvas>
                 </RibbonGroup>
+                <RibbonGroup Header="设备列表">
+                    <ListBox Name="DeviceList" Style="{StaticResource DeviceList}" Width="300" SelectionChanged="DeviceList_SelectionChanged">
+                    </ListBox>
+                </RibbonGroup>
+                <RibbonGroup Header="设备选项">
+                    <RibbonCheckBox Name="ShowInMonitor"  Label="显示在监控中"
+                                    Checked="ShowInMonitor_Checked" Unchecked="ShowInMonitor_Unchecked" />
+                </RibbonGroup>
             </RibbonTab>
-            <RibbonTab Header="捕获" KeyTip="R" ContextualTabGroupHeader="监控">
+            <RibbonTab Header="捕获" KeyTip="R">
                 <RibbonGroup Header="捕获控制">
                     <Label Content="捕获网卡：" />
                     <ComboBox Name="DeviceCombo" VerticalAlignment="Center" IsEditable="False" IsReadOnly="True"
@@ -84,18 +92,6 @@
                     </ComboBox>
                     <RibbonButton Label="开始" LargeImageSource="images/record32.png" SmallImageSource="images/record16.png"></RibbonButton>
                     <RibbonButton Label="停止" LargeImageSource="images/stop32.png" SmallImageSource="images/stop16.png"></RibbonButton>
-                </RibbonGroup>
-            </RibbonTab>
-            <RibbonTab Header="设备" KeyTip="D">
-                <RibbonGroup Header="设备列表">
-                    <ListBox Name="DeviceList" Style="{StaticResource DeviceList}" Width="500" SelectionChanged="DeviceList_SelectionChanged">
-                    </ListBox>
-                </RibbonGroup>
-                <RibbonGroup Header="设备选项">
-                    <RibbonCheckBox Name="ShowInMonitor"  Label="显示在监控中"
-                                    Checked="ShowInMonitor_Checked" Unchecked="ShowInMonitor_Unchecked" />
-                    <RibbonCheckBox Name="CaptureThis"  Label="捕获该网卡"
-                                    Checked="CaptureThis_Checked" Unchecked="CaptureThis_Unchecked" />
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
