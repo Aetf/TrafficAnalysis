@@ -34,6 +34,11 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         public TcpPair Pair { get; private set; }
 
         /// <summary>
+        /// Get the connection ID.
+        /// </summary>
+        public UInt64 ConnectionID { get; private set; }
+
+        /// <summary>
         /// Directly append data to stream in given direction.
         /// </summary>
         /// <param name="dir"></param>
@@ -43,7 +48,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             TcpStream stream = streams[dir];
             stream.IsEmpty = false;
 
-            // TODO: add data.
+            stream.Write(data, 0, data.Length);
         }
 
         /// <summary>
@@ -60,10 +65,31 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
 
         public TcpConnection(TcpPair pair)
         {
-            tcbs[0] = new TCB();
-            tcbs[1] = new TCB();
-            
+            for (int i = 0; i != 2; i++)
+            {
+                tcbs[i] = new TCB();
+                streams[i] = new TcpStream();
+            }
+
+            ConnectionID = GetID();
             Pair = pair;
         }
+
+        #region ConnectionID generate
+        private static UInt64 nxtid = 0;
+        private static UInt64 GetID()
+        {
+            return nxtid++;
+        }
+
+        /// <summary>
+        /// Set next id to use. This should be careful.
+        /// </summary>
+        /// <param name="?"></param>
+        internal static void SetNextID(UInt64 id)
+        {
+            nxtid = id;
+        }
+        #endregion
     }
 }

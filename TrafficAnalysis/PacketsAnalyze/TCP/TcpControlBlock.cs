@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PcapDotNet.Packets.Transport;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
@@ -26,7 +27,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// </summary>
         /// <param name="flags"></param>
         /// <param name="isReceived">true if flags was received by this tcb's corresponding host</param>
-        public void Transit(TCPFlags flags, bool isReceived)
+        public void Transit(TcpControlBits flags, bool isReceived)
         {
             switch (State)
             {
@@ -48,7 +49,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                 break;
             case TcpState.ESTABLISHED:
                 {
-                    if (isReceived && flags.FIN)
+                    if (isReceived && flags.HasFlag(TcpControlBits.Fin))
                     {
                         State = TcpState.CLOSED;
                     }

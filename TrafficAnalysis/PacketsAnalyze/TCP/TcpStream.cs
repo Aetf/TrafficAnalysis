@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using PacketDotNet;
 using System.IO;
+using PcapDotNet.Packets.Transport;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
@@ -40,7 +40,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// </summary>
         public bool IsFinished { get; internal set; }
 
-        private MemoryStream dataStream;
+        private MemoryStream dataStream = new MemoryStream(65535);
         public MemoryStream Data
         {
             get { return dataStream; }
@@ -92,7 +92,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// <summary>
         /// Flags assosiated
         /// </summary>
-        public TCPFlags flags;
+        public TcpControlBits flags;
 
         /// <summary>
         /// Actual captured data array

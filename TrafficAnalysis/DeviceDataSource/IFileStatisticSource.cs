@@ -32,6 +32,12 @@ namespace TrafficAnalysis.DeviceDataSource
         RangeStatisticsInfo Query(TimeSpan start, TimeSpan end);
 
         /// <summary>
+        /// Reassemble tcp streams in the file and save stream files in given directory.
+        /// </summary>
+        /// <param name="saveDir"></param>
+        void TcpStreamReassemble(string saveDir);
+
+        /// <summary>
         /// Reset to load a new file.
         /// </summary>
         void Reset();

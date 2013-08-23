@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.NetworkInformation;
-using PacketDotNet;
 using System.IO;
+using PcapDotNet.Packets.IpV4;
+using PcapDotNet.Packets.Transport;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
@@ -34,22 +35,30 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             string bip = pair.BIP.ToString().Replace(':', ' ');
             string[] name = new string[]
             {
-                string.Format("S[{1}][{2}]D[{3}][{4}]", aip, pair.APort, bip, pair.BPort),
-                string.Format("S[{1}][{2}]D[{3}][{4}]", bip, pair.BPort, aip, pair.APort)
+                string.Format("S[{0}][{1}]D[{2}][{3}]_{4}", aip, pair.APort, bip, pair.BPort, conn.ConnectionID),
+                string.Format("S[{0}][{1}]D[{2}][{3}]_{4}", bip, pair.BPort, aip, pair.APort, conn.ConnectionID)
             };
 
             for (int i = 0; i != 2; i++)
             {
                 FileInfo info = new FileInfo(Path.Combine(new string[] { SavePath, name[i] }));
-                FileStream fs = info.Create();
-                conn.Stream(i).Data.CopyTo(fs);
-                fs.Close();
+                using (var fs = info.Create())
+                {
+                    conn.Stream(i).Data.Seek(0, SeekOrigin.Begin);
+                    conn.Stream(i).Data.CopyTo(fs);
+                }
             }
+
+            connPool.Remove(pair);
         }
         #endregion
 
         public string SavePath { get; private set; }
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="saveDir">The directory to save stream files</param>
         public TcpReassembly(string saveDir)
         {
             FileInfo info = new FileInfo(saveDir);
@@ -69,24 +78,47 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                     SavePath = info.FullName;
                 }
             }
+
+            TcpConnection.SetNextID(0);
         }
 
         /// <summary>
         /// Add a packet to the Reassembly
         /// </summary>
         /// <param name="packet"></param>
-        public void AddPacket(TcpPacket packet)
+        public void AddPacket(IpV4Datagram packet)
         {
-            IpPacket parent = packet.ParentPacket as IpPacket;
-            int tcpLength = parent.TotalLength
-                            - parent.HeaderLength * 4; // HeaderLength is in 32bit word, so *4 here.
+            if (packet.Protocol != IpV4Protocol.Tcp)
+                return;
 
-            UInt32 origDataLength = (UInt32)(tcpLength - packet.DataOffset);
+            TcpDatagram tcpp = packet.Transport as TcpDatagram;
+            int tcpLength = packet.TotalLength
+                            - packet.HeaderLength;
+
+            UInt32 origDataLength = (UInt32)(tcpLength - tcpp.HeaderLength);
             // packet.PayloadData.Length < origDataLength means not fully captured.
 
-            tcp_reassemble(packet.SequenceNumber, packet.AcknowledgmentNumber,
-                            origDataLength, packet.PayloadData,
-                            new TCPFlags(packet), new TcpPair(packet));
+            IPAddress sip = IPAddress.Parse(packet.Source.ToString());
+            IPAddress dip = IPAddress.Parse(packet.Destination.ToString());
+            TcpPair pair = new TcpPair(new IPEndPoint(sip, tcpp.SourcePort),
+                                       new IPEndPoint(dip, tcpp.DestinationPort));
+            
+            tcp_reassemble(tcpp.SequenceNumber, tcpp.AcknowledgmentNumber,
+                            origDataLength, tcpp.Payload.ToArray(),
+                            tcpp.ControlBits, pair);
+        }
+
+        /// <summary>
+        /// Call when a flux file is ended, cause all unclosed connections to be closed
+        /// and written to file.
+        /// </summary>
+        public void Finish()
+        {
+            TcpConnection[] conns = connPool.Values.ToArray();
+            foreach (var conn in conns)
+            {
+                CloseConnection(conn);
+            }
         }
 
         /// <summary>
@@ -96,10 +128,10 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// <param name="acknowledgement">Acknowledgement number of the tcp packet</param>
         /// <param name="length">Length of the original payload data</param>
         /// <param name="data">Actual captured data</param>
-        /// <param name="flags">All flags of the tcp packet</param>
+        /// <param name="flags">All control bits of the tcp packet</param>
         /// <param name="pair">Tcp end point pair, we use its AEP as source and BEP as destination</param>
         private void tcp_reassemble(UInt32 sequence, UInt32 acknowledgement, UInt32 length, Byte[] data,
-                                TCPFlags flags, TcpPair pair)
+                                TcpControlBits flags, TcpPair pair)
         {
             // First to get a TcpConnection object, which can either be seen before
             // or a newly created one.
@@ -136,7 +168,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
 
                 // This is the first time we see sequence number (in this direction)
                 tcb.seq = sequence + length;
-                if (flags.SYN)
+                if (flags.HasFlag(TcpControlBits.Synchronize))
                 {
                     tcb.seq++; // we hold next seq, and in case of syn, next seq is sequence+1
                 }
@@ -198,12 +230,12 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             {
                 // right on time
                 tcb.seq += length;
-                if (flags.SYN) tcb.seq++;
+                if (flags.HasFlag(TcpControlBits.Synchronize)) tcb.seq++;
 
                 if (data != null)
                     conn.WritePacketData(dir, data);
 
-                if (flags.FIN)
+                if (flags.HasFlag(TcpControlBits.Fin))
                     if (conn.CloseStream(dir))
                         CloseConnection(conn);
 
@@ -282,7 +314,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
 
                         tcb.seq += (cur.len - new_offset);
 
-                        if (cur.flags.FIN)
+                        if (cur.flags.HasFlag(TcpControlBits.Fin))
                             if (conn.CloseStream(dir))
                                 CloseConnection(conn);
                     }
@@ -310,7 +342,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
                     {
                         conn.WritePacketData(dir, cur.data);
                     }
-                    if (cur.flags.FIN)
+                    if (cur.flags.HasFlag(TcpControlBits.Fin))
                         if (conn.CloseStream(dir))
                             CloseConnection(conn);
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using PcapDotNet.Core;
 using PcapDotNet.Packets;
 using TrafficAnalysis.PacketsAnalyze;
+using TrafficAnalysis.PacketsAnalyze.TCP;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -13,6 +15,8 @@ namespace TrafficAnalysis.DeviceDataSource
             Earliest = DateTime.MaxValue;
             Latest = DateTime.MinValue;
         }
+
+        private OfflinePacketDevice dev;
 
         #region Members of IFileStatisticsSource
 
@@ -31,17 +35,18 @@ namespace TrafficAnalysis.DeviceDataSource
         public bool FileLoaded { get { return fileLoaded; } }
         #endregion
 
+        // Long time operation
         public void Load(string filepath)
         {
             // file validation
-            if (false)
+            if (!Path.GetExtension(filepath).Equals(".pcap", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The file is nonexist or not valid");
             }
 
             Reset();
 
-            OfflinePacketDevice dev = new OfflinePacketDevice(filepath);
+            dev = new OfflinePacketDevice(filepath);
 
             // Read all packets from file until EOF
             using (PacketCommunicator communicator = dev.Open())
@@ -60,9 +65,39 @@ namespace TrafficAnalysis.DeviceDataSource
             presum.Clear();
             bpsList.Clear();
             ppsList.Clear();
+            dev = null;
             fileLoaded = false;
             Earliest = DateTime.MaxValue;
             Latest = DateTime.MinValue;
+        }
+
+        // Long time operation
+        public void TcpStreamReassemble(string saveDir)
+        {
+            if (!fileLoaded)
+            {
+                throw new InvalidOperationException("No file has been loaded");
+            }
+
+            TcpReassembly tcpre = new TcpReassembly(saveDir);
+
+            // Read all packets from file until EOF
+            using (PacketCommunicator communicator = dev.Open())
+            {
+                communicator.SetFilter("tcp");
+                communicator.ReceivePackets(0, p => 
+                    {
+                        tcpre.AddPacket(p.Ethernet.IpV4);
+                    });
+            }
+            tcpre.Finish();
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    UseShellExecute = true,
+                    FileName = saveDir,
+                    Verb = "open"
+                });
         }
 
         public RangeStatisticsInfo Query(TimeSpan start, TimeSpan end)
@@ -127,7 +162,7 @@ namespace TrafficAnalysis.DeviceDataSource
                 Latest = packet.Timestamp;
         }
 
-        #region Analyze
+        #region Statistics Analyze
 
         /// <summary>
         /// Only contains a packet's basic information
