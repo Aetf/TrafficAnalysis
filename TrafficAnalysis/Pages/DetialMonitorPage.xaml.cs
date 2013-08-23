@@ -345,14 +345,7 @@ namespace TrafficAnalysis.Pages
 
         void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (Window.Tabs.SelectedItem != this)
-            {
-                Window.MonitorTabGroup.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                Window.MonitorTabGroup.Visibility = Visibility.Visible;
-            }
+            
         }
 
         #endregion
@@ -364,7 +357,6 @@ namespace TrafficAnalysis.Pages
             Window = window;
             Ssource = window.Ssource;
 
-            Window.MonitorTabGroup.Visibility = Visibility.Visible;
             tItem.Header = Header;
             Ssource.MonitoringList.DeviceListChanged += MonitoringListChanged;
             Window.Tabs.SelectionChanged += Tabs_SelectionChanged;
@@ -372,7 +364,6 @@ namespace TrafficAnalysis.Pages
 
         public void OnTabItemDetaching(MainWindow window, TabItem tItem)
         {
-            Window.MonitorTabGroup.Visibility = Visibility.Collapsed;
             Ssource.MonitoringList.DeviceListChanged -= MonitoringListChanged;
         }
 
