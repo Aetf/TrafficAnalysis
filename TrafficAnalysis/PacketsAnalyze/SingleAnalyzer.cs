@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
 using System;
-using PacketDotNet;
+using System.Linq;
 using TrafficAnalysis.Util;
 using System.Text;
 using TrafficAnalysis.DeviceDataSource;
+using PcapDotNet.Packets;
+using PcapDotNet.Packets.Transport;
+using PcapDotNet.Packets.IpV4;
+using PcapDotNet.Packets.Ethernet;
 
 namespace TrafficAnalysis.PacketsAnalyze
 {
@@ -13,7 +17,7 @@ namespace TrafficAnalysis.PacketsAnalyze
         {
             // Get a packet from raw data.
             // Be a little lazy and assume that only Ethernet DLL protcol is used.
-            EthernetPacket packet = Packet.ParsePacket(LinkLayers.Ethernet, raw.Buffer) as EthernetPacket;
+            EthernetDatagram packet = raw.Ethernet;
 
             CategorizeInfo info = new CategorizeInfo
             {
@@ -23,19 +27,16 @@ namespace TrafficAnalysis.PacketsAnalyze
             };
 
             #region Network Layer
-            switch (packet.Type)
+            switch (packet.EtherType)
             {
-            case EthernetPacketType.Arp:
+            case EthernetType.Arp:
                 info.NetworkLayer.Increment("ARP");
                 break;
-            case EthernetPacketType.IpV4:
+            case EthernetType.IpV4:
                 info.NetworkLayer.Increment("IPv4");
                 break;
-            case EthernetPacketType.IpV6:
+            case EthernetType.IpV6:
                 info.NetworkLayer.Increment("IPv6");
-                break;
-            case EthernetPacketType.Loop:
-                info.NetworkLayer.Increment("Loop");
                 break;
             default:
                 info.NetworkLayer.Increment("Others");
@@ -44,15 +45,16 @@ namespace TrafficAnalysis.PacketsAnalyze
             #endregion
 
             #region Transport Layer
-            IPv4Packet ipv4pk = packet.Extract(typeof(IPv4Packet)) as IPv4Packet;
-            if (ipv4pk != null)
+            IpV4Datagram ipv4pk = null;
+            if (packet.EtherType == EthernetType.IpV4)
             {
+                ipv4pk = packet.IpV4;
                 switch (ipv4pk.Protocol)
                 {
-                case IPProtocolType.TCP:
+                case IpV4Protocol.Tcp:
                     info.TransportLayer.Increment("TCP");
                     break;
-                case IPProtocolType.UDP:
+                case IpV4Protocol.Udp:
                     info.TransportLayer.Increment("UDP");
                     break;
                 default:
@@ -65,10 +67,10 @@ namespace TrafficAnalysis.PacketsAnalyze
             #region Application Layer
             if (ipv4pk != null)
             {
-                if (ipv4pk.Protocol == IPProtocolType.TCP)
+                if (ipv4pk.Protocol == IpV4Protocol.Tcp)
                 {
-                    TcpPacket tcpPk= ipv4pk.PayloadPacket as TcpPacket;
-                    string s = new ASCIIEncoding().GetString(tcpPk.PayloadData);
+                    TcpDatagram tcpPk= ipv4pk.Tcp;
+                    string s = new ASCIIEncoding().GetString(tcpPk.Payload.ToArray());
                     if (s.IndexOf("HTTP") > 0)
                     {  // Found HTTP head
                         info.ApplicationLayer.Increment("HTTP Header");
