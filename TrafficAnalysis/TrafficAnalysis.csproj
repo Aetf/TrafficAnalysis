@@ -61,6 +61,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\SystemLib\DynamicDataDisplay v0.3.47\Release\DynamicDataDisplay.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack">
+      <HintPath>D:\SystemLib\Windows API Code Pack 1.1\binaries\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
+      <HintPath>D:\SystemLib\Windows API Code Pack 1.1\binaries\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
     <Reference Include="PacketDotNet, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\SystemLib\SharpPcap-4.2.0\Release\PacketDotNet.dll</HintPath>
@@ -72,7 +78,8 @@
       <HintPath>D:\SystemLib\PcapDotNet\PcapDotNet.Binaries.0.10.0.67076.x86\PcapDotNet.Packets.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework.Aero" />
-    <Reference Include="SharpPcap">
+    <Reference Include="SharpPcap, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\SystemLib\SharpPcap-4.2.0\Release\SharpPcap.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -94,6 +101,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>D:\SystemLib\ExtendedWPFToolkit_Binaries\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -112,6 +122,9 @@
     <Compile Include="Pages\ITabPage.cs" />
     <Compile Include="Pages\DetialMonitorPage.xaml.cs">
       <DependentUpon>DetialMonitorPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="StartNewCaptureDetial.xaml.cs">
+      <DependentUpon>StartNewCaptureDetial.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="UI\FrameworkElementExtension.cs" />
@@ -161,6 +174,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="StartNewCaptureDetial.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -195,7 +212,10 @@
     <Resource Include="images\stop16.png" />
     <Resource Include="images\stop32.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="images\degrag16.png" />
+    <Resource Include="images\degrag32.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
