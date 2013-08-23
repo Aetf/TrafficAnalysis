@@ -128,10 +128,9 @@ namespace TrafficAnalysis
             {
                 FileAnalyzePage page = new FileAnalyzePage(dlg.FileName);
                 pages.Add(page);
-                ActivateDocument.Execute(this, page);
+                ActivateDocument.Execute(page, this);
 
                 Tabs.SelectedIndex = pages.Count - 1;
-                page.Load();
             }
         }
         #endregion
@@ -238,6 +237,7 @@ namespace TrafficAnalysis
         public static readonly RoutedCommand CloseDocument = new RoutedCommand();
         public static readonly RoutedCommand ActivateDocument = new RoutedCommand();
         public static readonly RoutedCommand NewFluxAnalyze = new RoutedCommand();
+        public static readonly RoutedCommand ReassembleTCP = new RoutedCommand();
         #endregion
     }
 }

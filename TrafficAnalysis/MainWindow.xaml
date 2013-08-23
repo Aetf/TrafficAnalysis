@@ -5,6 +5,7 @@
         xmlns:chart="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
         xmlns:cc="clr-namespace:Controls.DataVisualization.Charting;assembly=Controls"
         xmlns:a="clr-namespace:TrafficAnalysis"
+        xmlns:ap="clr-namespace:TrafficAnalysis.Pages"
         xmlns:aui="clr-namespace:TrafficAnalysis.UI"
         xmlns:aex="clr-namespace:TrafficAnalysis.ChartEx"
         xmlns:ads="clr-namespace:TrafficAnalysis.DeviceDataSource"
@@ -30,7 +31,6 @@
             </Ribbon.ApplicationMenu>
 
             <Ribbon.ContextualTabGroups>
-                <RibbonContextualTabGroup Name="MonitorTabGroup" Header="监控" Visibility="Visible" />
                 <RibbonContextualTabGroup Name="FileAnalyzeTabGroup" Header="文件分析" Visibility="Collapsed" />
             </Ribbon.ContextualTabGroups>
 
@@ -92,6 +92,12 @@
                     </ComboBox>
                     <RibbonButton Label="开始" LargeImageSource="images/record32.png" SmallImageSource="images/record16.png"></RibbonButton>
                     <RibbonButton Label="停止" LargeImageSource="images/stop32.png" SmallImageSource="images/stop16.png"></RibbonButton>
+                </RibbonGroup>
+            </RibbonTab>
+            <RibbonTab Header="分析选项" ContextualTabGroupHeader="文件分析">
+                <RibbonGroup Header="Tcp流">
+                    <RibbonButton Label="重组" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
+                                  Command="{x:Static a:MainWindow.ReassembleTCP}"/>
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
