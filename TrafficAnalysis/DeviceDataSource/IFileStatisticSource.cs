@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -9,8 +10,15 @@ namespace TrafficAnalysis.DeviceDataSource
     interface IFileStatisticSource
     {
         /// <summary>
+        /// ProgressChanged.
+        /// </summary>
+        event ProgressChangedEventHandler ProgressChanged;
+
+        /// <summary>
         /// Load a capture file.
-        /// Won't return untile the file is fully analyzed.
+        /// This is a long time operation, and
+        /// won't return untile the file is fully analyzed.
+        /// This should typically run as a background thread.
         /// </summary>
         /// <param name="filepath"></param>
         void Load(string filepath);

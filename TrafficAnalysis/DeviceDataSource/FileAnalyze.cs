@@ -5,6 +5,7 @@ using PcapDotNet.Core;
 using PcapDotNet.Packets;
 using TrafficAnalysis.PacketsAnalyze;
 using TrafficAnalysis.PacketsAnalyze.TCP;
+using System.ComponentModel;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -48,15 +49,21 @@ namespace TrafficAnalysis.DeviceDataSource
 
             dev = new OfflinePacketDevice(filepath);
 
+            ReportProgress(0, "读取文件...");
             // Read all packets from file until EOF
             using (PacketCommunicator communicator = dev.Open())
             {
                 communicator.ReceivePackets(0, OnPacketArrival);
             }
 
+            ReportProgress(20, "对数据包排序...");
             plist.Sort();
+
+            ReportProgress(50, "分析中...");
             Analyze();
             fileLoaded = true;
+
+            ReportProgress(100, "完成");
         }
 
         public void Reset()
@@ -160,6 +167,14 @@ namespace TrafficAnalysis.DeviceDataSource
 
             if (packet.Timestamp > Latest)
                 Latest = packet.Timestamp;
+        }
+
+        private void ReportProgress(int progress, object userstate)
+        {
+            if (ProgressChanged != null)
+            {
+                ProgressChanged(this, new ProgressChangedEventArgs(progress, userstate));
+            }
         }
 
         #region Statistics Analyze
@@ -266,9 +281,15 @@ namespace TrafficAnalysis.DeviceDataSource
             if (plist.Count < 1)
                 return;
 
+            // Calculate progress info.
+            double tot = 100 - 50;
+            double each = tot / plist.Count;
+
+
             presum.Add(new RangeMeta(plist[0]));
             bpsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
             ppsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
+            ReportProgress((int) (tot + each), "分析中...");
 
             int delta = 15;
             for (int i = 1; i != plist.Count; i++)
@@ -286,10 +307,14 @@ namespace TrafficAnalysis.DeviceDataSource
                     bpsList.Add(new KeyValuePair<TimeSpan, double>(x, b));
                     ppsList.Add(new KeyValuePair<TimeSpan, double>(x, p));
                 }
-                
+                ReportProgress((int) (tot + (i+1)*each), "分析中...");
             }
         }
 
+        #endregion
+
+        #region ProgressChanged Event
+        public event ProgressChangedEventHandler ProgressChanged;
         #endregion
     }
 
