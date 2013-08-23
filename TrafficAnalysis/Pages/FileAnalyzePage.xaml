@@ -4,93 +4,96 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:aui="clr-namespace:TrafficAnalysis.UI"
              xmlns:aex="clr-namespace:TrafficAnalysis.ChartEx"
              xmlns:cc="clr-namespace:Controls.DataVisualization.Charting;assembly=Controls"
              xmlns:chart="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="5*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="5*" />
-        </Grid.RowDefinitions>
-        
-        <d3:ChartPlotter x:Name="TimeLine" Grid.Row="0" Margin="5 5 5 5" LegendVisibility="Collapsed">
-            <d3:ChartPlotter.MainVerticalAxis>
-                <d3:VerticalAxis ShowMinorTicks="False"/>
-            </d3:ChartPlotter.MainVerticalAxis>
-            <d3:ChartPlotter.MainHorizontalAxis>
-                <d3:HorizontalTimeSpanAxis x:Name="TimeLineXAxis" />
-            </d3:ChartPlotter.MainHorizontalAxis>
-
-            <d3:VerticalAxisTitle Content="Bit/sec" Placement="Left" />
-            <d3:InjectedPlotter x:Name="TimeLineInnerPps" Background="Aqua"
-                                            SetViewportBinding="True" >
-                <d3:VerticalAxis ShowMinorTicks="False" Placement="Right"/>
-                <d3:VerticalAxisTitle Content="Packet/sec" Placement="Right" />
-            </d3:InjectedPlotter>
-            <d3:AxisNavigation Placement="Right"/>
-            
-            <aex:SelectionLine x:Name="LineMin" LineStrokeThickness="3"/>
-            <aex:SelectionLine x:Name="LineMax" LineStrokeThickness="3"/>
-        </d3:ChartPlotter>
-
-        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
-                                  Height="3" Background="LightGray"
-                                  ShowsPreview="False"/>
-
-        <Grid Grid.Row="2">
+    <xctk:BusyIndicator x:Name="BusyIndicator">
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
+                <RowDefinition Height="5*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="5*" />
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Label Content="时间段: 从" />
-                <TextBox Name="FromTime" VerticalContentAlignment="Center">01:11:35.5</TextBox>
-                <Label Content="到" />
-                <TextBox Name="ToTime" VerticalContentAlignment="Center">01:15:35.5</TextBox>
-            </StackPanel>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Label Content="统计信息:" />
-                <Label Content="总包数:" />
-                <Label Name="TotalPacketsLabel"  Content="N/A" />
-                <Label Content="总大小:" />
-                <Label Name="TotalSizeLabel"  Content="N/A" />
-                <Label Content="平均BPS" />
-                <Label Name="AverageBPS" Content="N/A" />
-                <Label Content="平均PPS" />
-                <Label Name="AveragePPS" Content="N/A" />
-            </StackPanel>
-        </Grid>
 
-        <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch"
+            <d3:ChartPlotter x:Name="TimeLine" Grid.Row="0" Margin="5 5 5 5" LegendVisibility="Collapsed">
+                <d3:ChartPlotter.MainVerticalAxis>
+                    <d3:VerticalAxis ShowMinorTicks="False"/>
+                </d3:ChartPlotter.MainVerticalAxis>
+                <d3:ChartPlotter.MainHorizontalAxis>
+                    <d3:HorizontalTimeSpanAxis x:Name="TimeLineXAxis" />
+                </d3:ChartPlotter.MainHorizontalAxis>
+
+                <d3:VerticalAxisTitle Content="Bit/sec" Placement="Left" />
+                <d3:InjectedPlotter x:Name="TimeLineInnerPps" Background="Aqua"
+                                            SetViewportBinding="True" >
+                    <d3:VerticalAxis ShowMinorTicks="False" Placement="Right"/>
+                    <d3:VerticalAxisTitle Content="Packet/sec" Placement="Right" />
+                </d3:InjectedPlotter>
+                <d3:AxisNavigation Placement="Right"/>
+
+                <aex:SelectionLine x:Name="LineMin" LineStrokeThickness="3"/>
+                <aex:SelectionLine x:Name="LineMax" LineStrokeThickness="3"/>
+            </d3:ChartPlotter>
+
+            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
                                   Height="3" Background="LightGray"
                                   ShowsPreview="False"/>
 
-        <aui:FlexStackPanel Grid.Row="4" StretchDirection="Both">
-            <chart:Chart Title="Network Layer"
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Label Content="时间段: 从" />
+                    <TextBox Name="FromTime" VerticalContentAlignment="Center">01:11:35.5</TextBox>
+                    <Label Content="到" />
+                    <TextBox Name="ToTime" VerticalContentAlignment="Center">01:15:35.5</TextBox>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Label Content="统计信息:" />
+                    <Label Content="总包数:" />
+                    <Label Name="TotalPacketsLabel"  Content="N/A" />
+                    <Label Content="总大小:" />
+                    <Label Name="TotalSizeLabel"  Content="N/A" />
+                    <Label Content="平均BPS" />
+                    <Label Name="AverageBPS" Content="N/A" />
+                    <Label Content="平均PPS" />
+                    <Label Name="AveragePPS" Content="N/A" />
+                </StackPanel>
+            </Grid>
+
+            <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch"
+                                  Height="3" Background="LightGray"
+                                  ShowsPreview="False"/>
+
+            <aui:FlexStackPanel Grid.Row="4" StretchDirection="Both">
+                <chart:Chart Title="Network Layer"
                                      Style="{StaticResource compactChart}" LegendStyle="{StaticResource HiddenLegend}">
-                <chart:ColumnSeries Name="anaNetSeries" IndependentValuePath="Key" DependentValuePath="Value">
-                </chart:ColumnSeries>
-            </chart:Chart>
-            <cc:LabeledPieChart Title="Transport Layer"
+                    <chart:ColumnSeries Name="anaNetSeries" IndependentValuePath="Key" DependentValuePath="Value">
+                    </chart:ColumnSeries>
+                </chart:Chart>
+                <cc:LabeledPieChart Title="Transport Layer"
                                             Style="{StaticResource compactLabeledPieChart}" >
-                <cc:LabeledPieSeries Name="anaTransSeries" IndependentValuePath="Key" DependentValuePath="Value"
+                    <cc:LabeledPieSeries Name="anaTransSeries" IndependentValuePath="Key" DependentValuePath="Value"
                                                  PieChartLabelItemTemplate="{StaticResource pieChartLabelDataTemplate}"
                                                  LabelDisplayMode="AutoMixed">
-                </cc:LabeledPieSeries>
-            </cc:LabeledPieChart>
-            <cc:LabeledPieChart Title="Application Layer"
+                    </cc:LabeledPieSeries>
+                </cc:LabeledPieChart>
+                <cc:LabeledPieChart Title="Application Layer"
                                             Style="{StaticResource compactLabeledPieChart}" >
-                <cc:LabeledPieSeries Name="anaAppSeries" IndependentValuePath="Key" DependentValuePath="Value"
+                    <cc:LabeledPieSeries Name="anaAppSeries" IndependentValuePath="Key" DependentValuePath="Value"
                                                  PieChartLabelItemTemplate="{StaticResource pieChartLabelDataTemplate}"
                                                  LabelDisplayMode="AutoMixed">
-                </cc:LabeledPieSeries>
-            </cc:LabeledPieChart>
-        </aui:FlexStackPanel>
-    </Grid>
+                    </cc:LabeledPieSeries>
+                </cc:LabeledPieChart>
+            </aui:FlexStackPanel>
+        </Grid>
+    </xctk:BusyIndicator>
 </UserControl>

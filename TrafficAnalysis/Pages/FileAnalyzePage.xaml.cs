@@ -18,6 +18,9 @@ using Microsoft.Research.DynamicDataDisplay.DataSources;
 using Microsoft.Research.DynamicDataDisplay.Charts;
 using Microsoft.Research.DynamicDataDisplay.ViewportRestrictions;
 using TrafficAnalysis.DeviceDataSource;
+using TrafficAnalysis.PacketsAnalyze.TCP;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System.ComponentModel;
 
 namespace TrafficAnalysis.Pages
 {
@@ -75,11 +78,27 @@ namespace TrafficAnalysis.Pages
 
         #region Analyze
 
+        /// <summary>
+        /// Load file in a background thread and show a busyindicator.
+        /// </summary>
         public void Load()
         {
-            try
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (o, ea) =>
             {
-                Fsource.Load(filePath);
+                IFileStatisticSource fsource = (IFileStatisticSource)ea.Argument;
+                fsource.Load(filePath);
+            };
+
+            worker.RunWorkerCompleted += (o, ea) =>
+            {
+                if (ea.Error != null)
+                {
+                    MessageBox.Show(ea.Error.Message);
+                    MainWindow.CloseDocument.Execute(TItem, this);
+                    BusyIndicator.IsBusy = false;
+                    return;
+                }
 
                 var axis = TimeLine.MainHorizontalAxis as HorizontalTimeSpanAxis;
                 double w = axis.ConvertToDouble(Fsource.Latest - Fsource.Earliest);
@@ -106,11 +125,11 @@ namespace TrafficAnalysis.Pages
                 }
                 TimeLine.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hb)));
                 TimeLineInnerPps.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hp)));
-            }
-            catch (ArgumentException)
-            {
-                MessageBox.Show("非法的文件格式或文件不存在！");
-            }
+                BusyIndicator.IsBusy = false;
+            };
+
+            BusyIndicator.IsBusy = true;
+            worker.RunWorkerAsync(Fsource);
         }
         /// <summary>
         /// Calculate and refresh file info for file analyze
@@ -164,6 +183,24 @@ namespace TrafficAnalysis.Pages
                 CalculateInfo(t1, t2);
             }
         }
+
+        
+        #endregion
+
+        #region Public
+        
+        void ReassembleTCP()
+        {
+            var dlg = new CommonOpenFileDialog();
+            dlg.IsFolderPicker = true;
+
+            var res = dlg.ShowDialog();
+
+            if (res == CommonFileDialogResult.Ok)
+            {
+                Fsource.TcpStreamReassemble(dlg.FileName);
+            }
+        }
         #endregion
 
         #region ITabPage Members
@@ -174,6 +211,16 @@ namespace TrafficAnalysis.Pages
 
             Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
             tItem.Header = Header;
+
+            CommandBindings.Add(new CommandBinding(MainWindow.ReassembleTCP,
+                (o, e) =>
+                {
+                    if (Window.Tabs.SelectedContent == this)
+                        ReassembleTCP();
+                }));
+
+            // Load the file.
+            Load();
         }
 
         public void OnTabItemDetaching(MainWindow window, TabItem tItem)
