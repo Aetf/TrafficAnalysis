@@ -150,14 +150,14 @@ namespace TrafficAnalysis.ChartEx
                     || oldv.Width != newv.Width))
                 {
                     UpdateUIRepresentation();
-                    OnPropertyChanged("CurrentValue");
+                    CurrentValueChanged();
                 }
                 else if(Orientation == Orientation.Horizontal &&
                     (oldv.YMin != newv.YMin
                     || oldv.Height != newv.Height))
                 {
                     UpdateUIRepresentation();
-                    OnPropertyChanged("CurrentValue");
+                    CurrentValueChanged();
                 }
             }
         }
@@ -397,6 +397,23 @@ namespace TrafficAnalysis.ChartEx
                     dataPoint.Y : dataPoint.X;
             }
         }
+
+        // Fix to slowly response when zooming or paning the viewport
+        // See issue #2
+        private DateTime lastUpdate;
+        private void CurrentValueChanged()
+        {
+            if (lastUpdate != null
+                &&
+                (DateTime.Now - lastUpdate).TotalMilliseconds < 500)
+                return;
+
+            lastUpdate = DateTime.Now;
+            
+            OnPropertyChanged("CurrentValue");
+        }
+        // Fix end
+
         #endregion
 
 
@@ -425,7 +442,7 @@ namespace TrafficAnalysis.ChartEx
             SelectionLine graph = (SelectionLine)d;
             graph.UpdateUIRepresentation((Point)e.NewValue);
             graph.OnPropertyChanged("Position");
-            graph.OnPropertyChanged("CurrentValue");
+            graph.CurrentValueChanged();
         }
         #endregion
 
