@@ -1,26 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Research.DynamicDataDisplay;
-using Microsoft.Research.DynamicDataDisplay.DataSources;
 using Microsoft.Research.DynamicDataDisplay.Charts;
+using Microsoft.Research.DynamicDataDisplay.DataSources;
 using Microsoft.Research.DynamicDataDisplay.ViewportRestrictions;
-using TrafficAnalysis.DeviceDataSource;
-using TrafficAnalysis.PacketsAnalyze.TCP;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using System.ComponentModel;
+using TrafficAnalysis.DeviceDataSource;
 
 namespace TrafficAnalysis.Pages
 {
@@ -78,16 +69,57 @@ namespace TrafficAnalysis.Pages
 
         #region Analyze
 
+        #region ProgressValue Property
+        /// <summary>
+        /// Gets or sets progress value showing in busyindicator.
+        /// </summary>
+        public int ProgressValue
+        {
+            get { return (int)GetValue(ProgressValueProperty); }
+            set { SetValue(ProgressValueProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies ProgressValue dependency property.
+        /// </summary>
+        public static readonly DependencyProperty ProgressValueProperty =
+                            DependencyProperty.Register(
+                                            "ProgressValue",
+                                            typeof(int),
+                                            typeof(FileAnalyzePage),
+                                            new UIPropertyMetadata(0));
+        #endregion
+
         /// <summary>
         /// Load file in a background thread and show a busyindicator.
         /// </summary>
         public void Load()
         {
             BackgroundWorker worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
             worker.DoWork += (o, ea) =>
             {
                 IFileStatisticSource fsource = (IFileStatisticSource)ea.Argument;
-                fsource.Load(filePath);
+                ProgressChangedEventHandler h = (sender, e) =>
+                {
+                    worker.ReportProgress(e.ProgressPercentage, e.UserState);
+                };
+                fsource.ProgressChanged += h;
+                
+                try
+                {
+                    fsource.Load(filePath);
+                }
+                finally
+                {
+                    fsource.ProgressChanged -= h;
+                }
+            };
+
+            worker.ProgressChanged += (o, e) =>
+            {
+                ProgressValue = e.ProgressPercentage;
+                busyIndicator.BusyContent = e.UserState;
             };
 
             worker.RunWorkerCompleted += (o, ea) =>
@@ -96,7 +128,7 @@ namespace TrafficAnalysis.Pages
                 {
                     MessageBox.Show(ea.Error.Message);
                     MainWindow.CloseDocument.Execute(TItem, this);
-                    BusyIndicator.IsBusy = false;
+                    busyIndicator.IsBusy = false;
                     return;
                 }
 
@@ -125,12 +157,13 @@ namespace TrafficAnalysis.Pages
                 }
                 TimeLine.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hb)));
                 TimeLineInnerPps.Viewport.Restrictions.Add(new DomainRestriction(new DataRect(0, 0, w, hp)));
-                BusyIndicator.IsBusy = false;
+                busyIndicator.IsBusy = false;
             };
 
-            BusyIndicator.IsBusy = true;
+            busyIndicator.IsBusy = true;
             worker.RunWorkerAsync(Fsource);
         }
+
         /// <summary>
         /// Calculate and refresh file info for file analyze
         /// </summary>

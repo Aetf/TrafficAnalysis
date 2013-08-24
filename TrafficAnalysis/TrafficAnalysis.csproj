@@ -150,6 +150,7 @@
     <Compile Include="UI\FlexStackPanel.cs" />
     <Compile Include="ChartEx\RemovableDataSource.cs" />
     <Compile Include="UI\VsTab.cs" />
+    <Compile Include="Util\DoubleConverter.cs" />
     <Page Include="ChartEx\SelectionLine.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

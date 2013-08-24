@@ -6,13 +6,55 @@
              xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:aui="clr-namespace:TrafficAnalysis.UI"
+             xmlns:aut="clr-namespace:TrafficAnalysis.Util"
              xmlns:aex="clr-namespace:TrafficAnalysis.ChartEx"
              xmlns:cc="clr-namespace:Controls.DataVisualization.Charting;assembly=Controls"
              xmlns:chart="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
-             mc:Ignorable="d" 
+             mc:Ignorable="d" x:Name="fileAnalyzePage"
              d:DesignHeight="450" d:DesignWidth="800">
-    <xctk:BusyIndicator x:Name="BusyIndicator">
-        <Grid>
+    <UserControl.Resources>
+        <aut:DoubleConverter x:Key="DoubleConverter"/>
+    </UserControl.Resources>
+    <xctk:BusyIndicator x:Name="busyIndicator">
+        <xctk:BusyIndicator.ProgressBarStyle>
+            <Style TargetType="{x:Type ProgressBar}">
+                <!--
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ProgressBar}">
+                            <Grid>
+                                <xctk:Pie x:Name="Pie" Fill="#FFEFAC27"
+                                          HorizontalAlignment="Stretch"
+                                          Width="Auto" StrokeThickness="4"
+                                          Slice="{TemplateBinding Value, Converter={StaticResource DoubleConverter}}"
+                                          RenderTransformOrigin="0.5,0.5">
+                                    <xctk:Pie.RenderTransform>
+                                        <RotateTransform Angle="-90" />
+                                    </xctk:Pie.RenderTransform>
+                                </xctk:Pie>
+                                <Ellipse Fill="White"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Width="100" Height="100" />
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="Black"
+                                               Text="{Binding ElementName=Pie, Path=Slice, StringFormat=#%}" />
+                                </StackPanel>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Width" Value="200" />
+                -->
+                <Setter Property="Height" Value="20" />
+                <Setter Property="IsIndeterminate" Value="False" />
+                <Setter Property="Value" Value="{Binding ElementName=fileAnalyzePage, Path=ProgressValue}" />
+                <Setter Property="Margin" Value="4" />
+            </Style>
+        </xctk:BusyIndicator.ProgressBarStyle>
+        
+            <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="5*" />
                 <RowDefinition Height="Auto" />
