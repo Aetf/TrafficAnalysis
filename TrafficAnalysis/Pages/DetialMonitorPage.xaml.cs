@@ -29,8 +29,8 @@ namespace TrafficAnalysis.Pages
         }
 
         #region Fields
-        private IStatisticsSource _Ssource;
-        public IStatisticsSource Ssource
+        private IDeviceSource _Ssource;
+        public IDeviceSource Ssource
         {
             get { return _Ssource; }
             set

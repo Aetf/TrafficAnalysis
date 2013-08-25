@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using PcapDotNet.Core;
 using PcapDotNet.Packets;
 using TrafficAnalysis.PacketsAnalyze;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
-    class MonitorPcap : IStatisticsSource
+    class MonitorPcap : IDeviceSource
     {
         #region public Dictionary<string, StatisticsInfo> Statistics
         private Dictionary<string, StatisticsInfo> _Statistics = new Dictionary<string, StatisticsInfo>();
@@ -57,20 +59,65 @@ namespace TrafficAnalysis.DeviceDataSource
             InitCapture();
         }
 
-        public void StartCapture(DeviceDes des, string dumpPath = null)
+        public void StartStatistic(DeviceDes des)
         {
             if (_MonitoringList.Contains(des))
                 return;
-            StartCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)), dumpPath);
+            StartCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)));
             _MonitoringList.Add(des);
         }
 
-        public void StopCapture(DeviceDes des)
+        public void StopStatistic(DeviceDes des)
         {
             if (!_MonitoringList.Contains(des))
                 return;
             StopCapture(LivePacketDevice.AllLocalMachine.FirstOrDefault(dev => dev.Name.Equals(des.Name)));
             _MonitoringList.Remove(des);
+        }
+
+        public Tuple<Task, CancellationTokenSource> CreateCaptureTask(DeviceDes des, DumpOptions options)
+        {
+            var dev = LivePacketDevice.AllLocalMachine.FirstOrDefault(d => d.Name.Equals(des.Name));
+            var tokenSource = new CancellationTokenSource();
+            var token = tokenSource.Token;
+
+            var task = Task.Factory.StartNew(state =>
+            {
+                // Open device
+                using (PacketCommunicator communicator = dev.Open(
+                    65535, PacketDeviceOpenAttributes.Promiscuous,
+                    250
+                    ))
+                {
+                    if (options.filter != null)
+                    {
+                        communicator.SetFilter(options.filter);
+                    }
+
+                    using (PacketDumpFile dumpFile = communicator.OpenDump(options.Path))
+                    {
+                        int count = 0;
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        while (count < options.Count
+                               && stopwatch.ElapsedMilliseconds < options.Durance.TotalMilliseconds)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            Packet packet;
+                            var result = communicator.ReceivePacket(out packet);
+
+                            dumpFile.Dump(packet);
+                            OnPacketArrivaled(packet, dev);
+                            count++;
+                        }
+                    }
+                }
+            }, token, TaskCreationOptions.LongRunning);
+            
+
+            return new Tuple<Task, CancellationTokenSource>(task, tokenSource);
         }
 
         #endregion
@@ -105,7 +152,7 @@ namespace TrafficAnalysis.DeviceDataSource
             ExtraInfos[des.Name] = new DeviceControlBlock();
         }
 
-        protected void StartCapture(LivePacketDevice dev, string dumppath = null)
+        protected void StartCapture(LivePacketDevice dev)
         {
             if (dev == null)
                 return;
@@ -116,8 +163,7 @@ namespace TrafficAnalysis.DeviceDataSource
             ExtraInfos[dev.Name].BackgroundThread.IsBackground = true;
             ExtraInfos[dev.Name].CaptureCancellation = new CancellationTokenSource();
 
-            if (dumppath == null)
-            {
+            
                 ThreadPool.QueueUserWorkItem(new WaitCallback(state =>
                 {
                     CancellationToken token = (CancellationToken)state;
@@ -136,33 +182,6 @@ namespace TrafficAnalysis.DeviceDataSource
                         }
                     }
                 }), ExtraInfos[dev.Name].CaptureCancellation.Token);
-            }
-            else
-            {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(state =>
-                {
-                    CancellationToken token = (CancellationToken)state;
-                    // Open device
-                    using (PacketCommunicator communicator = dev.Open(
-                        65535, PacketDeviceOpenAttributes.Promiscuous,
-                        250
-                        ))
-                    {
-                        using (PacketDumpFile dumpFile = communicator.OpenDump(dumppath))
-                        {
-                            while (!token.IsCancellationRequested)
-                            {
-                                communicator.ReceivePackets(200, packet =>
-                                {
-                                    dumpFile.Dump(packet);
-                                    OnPacketArrivaled(packet, dev);
-                                });
-                            }
-                        }
-                    }
-                }), ExtraInfos[dev.Name].CaptureCancellation.Token);
-            }
-            
         }
 
         protected void StopCapture(LivePacketDevice dev)
