@@ -19,6 +19,10 @@ namespace TrafficAnalysis.DeviceDataSource
 
         private OfflinePacketDevice dev;
 
+        private Int64 loadedbytes;
+
+        private Int64 totalbytes;
+
         #region Members of IFileStatisticsSource
 
         #region public IList<KeyValuePair<TimeSpan, double>> BpsList
@@ -49,17 +53,22 @@ namespace TrafficAnalysis.DeviceDataSource
 
             dev = new OfflinePacketDevice(filepath);
 
-            ReportProgress(0, "读取文件...");
+            FileInfo info = new FileInfo(filepath);
+            totalbytes = info.Length;
+
+            ReportProgress(Prog_ReadFileStart, "读取文件...");
+
+
             // Read all packets from file until EOF
             using (PacketCommunicator communicator = dev.Open())
             {
                 communicator.ReceivePackets(0, OnPacketArrival);
             }
 
-            ReportProgress(20, "对数据包排序...");
+            ReportProgress(Prog_SortPacketsStart, "对数据包排序...");
             plist.Sort();
 
-            ReportProgress(50, "分析中...");
+            ReportProgress(Prog_AnalyzePacketsStart, "分析中...");
             Analyze();
             fileLoaded = true;
 
@@ -73,6 +82,9 @@ namespace TrafficAnalysis.DeviceDataSource
             bpsList.Clear();
             ppsList.Clear();
             dev = null;
+            loadedbytes = 0;
+            totalbytes = 0;
+            lastreport = -1;
             fileLoaded = false;
             Earliest = DateTime.MaxValue;
             Latest = DateTime.MinValue;
@@ -162,19 +174,15 @@ namespace TrafficAnalysis.DeviceDataSource
         {
             plist.Add(new MetaPacket(packet));
 
+            loadedbytes += packet.Length;
+            ReportProgress((int) (Prog_ReadFileStart + (double) loadedbytes / totalbytes * Prog_ReadFileLen),
+                            "读取文件...");
+
             if (packet.Timestamp < Earliest)
                 Earliest = packet.Timestamp;
 
             if (packet.Timestamp > Latest)
                 Latest = packet.Timestamp;
-        }
-
-        private void ReportProgress(int progress, object userstate)
-        {
-            if (ProgressChanged != null)
-            {
-                ProgressChanged(this, new ProgressChangedEventArgs(progress, userstate));
-            }
         }
 
         #region Statistics Analyze
@@ -282,9 +290,8 @@ namespace TrafficAnalysis.DeviceDataSource
                 return;
 
             // Calculate progress info.
-            double tot = 100 - 50;
+            double tot = Prog_AnalyzePacketsLen;
             double each = tot / plist.Count;
-
 
             presum.Add(new RangeMeta(plist[0]));
             bpsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
@@ -313,8 +320,25 @@ namespace TrafficAnalysis.DeviceDataSource
 
         #endregion
 
-        #region ProgressChanged Event
+        #region ProgressChanged Implement
         public event ProgressChangedEventHandler ProgressChanged;
+
+        int lastreport = -1;
+        private void ReportProgress(int progress, object userstate)
+        {
+            if (ProgressChanged != null && lastreport != progress)
+            {
+                ProgressChanged(this, new ProgressChangedEventArgs(progress, userstate));
+                lastreport = progress;
+            }
+        }
+
+        static readonly int Prog_ReadFileStart = 0;
+        static readonly int Prog_ReadFileLen = 40;
+        static readonly int Prog_SortPacketsStart = Prog_ReadFileStart + Prog_ReadFileLen;
+        static readonly int Prog_SortPacketsLen = 10;
+        static readonly int Prog_AnalyzePacketsStart = Prog_SortPacketsStart + Prog_SortPacketsLen;
+        static readonly int Prog_AnalyzePacketsLen = 50;
         #endregion
     }
 
