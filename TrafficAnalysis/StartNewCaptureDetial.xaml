@@ -1,9 +1,12 @@
 ﻿<Window x:Class="TrafficAnalysis.StartNewCaptureDetial"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="StartNewCaptureDetial" Height="195" Width="300">
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:xc="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+        Title="StartNewCaptureDetial" Height="250" Width="300">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -16,22 +19,36 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <CheckBox Content="总包数" VerticalAlignment="Center"/>
-                <CheckBox Content="总时间" VerticalAlignment="Center" Grid.Row="1" />
-                <TextBox Grid.Column="1" VerticalAlignment="Center"/>
-                <TextBox Grid.Column="1" VerticalAlignment="Center" Grid.Row="1" />
+                <CheckBox Name="useTotalCount" Content="总包数: " VerticalAlignment="Center" HorizontalAlignment="Right"
+                          Margin="10 0"/>
+                <CheckBox Name="useTotalDurance"  Content="总时间: " Grid.Row="1"
+                          Margin="10 0"
+                          VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                <xctk:IntegerUpDown Name="TotalCnt" Grid.Column="1"
+                                    Margin="10 0 5 5" Width="70"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    Minimum="0"/>
+                <xctk:TimePicker Name="TotalDurance" Grid.Column="1" Grid.Row="1"
+                                 Margin="10 5 10 0" Width="70"
+                                 HorizontalAlignment="Left"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="过滤器" Margin="5">
             <TextBox Margin="5"></TextBox>
         </GroupBox>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" Margin="5">
-            <Button Margin="10 0 10 0" Padding="5 1" Content="开始"/>
-            <Button Margin="10 0 10 0" Padding="5 1" Content="取消"/>
+        <GroupBox Grid.Row="2" Header="目标文件" Margin="5">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBox Name="pathBox" Width="218"/>
+                <Button Name="browseBtn" Content="浏览..." Margin="5 0 0 0" Click="browseBtn_Click"/>
+            </StackPanel>
+        </GroupBox>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Margin="5">
+            <Button Margin="10 0 10 0" Padding="5 1" Content="开始" Click="Ok_Click"/>
+            <Button Margin="10 0 10 0" Padding="5 1" Content="取消" Click="Cancel_Click"/>
         </StackPanel>
     </Grid>
 </Window>
