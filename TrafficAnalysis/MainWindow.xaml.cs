@@ -1,26 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.DataVisualization.Charting;
 using System.Windows.Controls.Ribbon;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
-using Controls.DataVisualization.Charting;
-using Microsoft.Research.DynamicDataDisplay;
-using Microsoft.Research.DynamicDataDisplay.Charts;
-using Microsoft.Research.DynamicDataDisplay.DataSources;
-using Microsoft.Research.DynamicDataDisplay.ViewportRestrictions;
-using TrafficAnalysis.ChartEx;
 using TrafficAnalysis.DeviceDataSource;
-using TrafficAnalysis.Util;
 using TrafficAnalysis.Pages;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
 namespace TrafficAnalysis
 {
@@ -31,7 +18,7 @@ namespace TrafficAnalysis
     {
         #region Fields
 
-        internal IStatisticsSource Ssource = new MonitorPcap();
+        internal IDeviceSource Ssource = new MonitorPcap();
 
         private ObservableCollection<ITabPage> pages = new ObservableCollection<ITabPage>();
 
@@ -132,6 +119,8 @@ namespace TrafficAnalysis
         public void OpenNewFluxAnalyze()
         {
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            dlg.DefaultExt = ".pcap";
+            dlg.Filter = "Libpcap capture file (.pcap)|*.pcap";
 
             Nullable<bool> res = dlg.ShowDialog();
 
@@ -141,6 +130,37 @@ namespace TrafficAnalysis
                 pages.Add(page);
                 ActivateDocument.Execute(page, this);
             }
+        }
+
+        /// <summary>
+        /// Start a capture task.
+        /// </summary>
+        /// <param name="des"></param>
+        /// <param name="option"></param>
+        public void StartNewCaptureTask(DeviceDes des, DumpOptions? options = null)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = null;
+            if (options == null)
+            {
+                dlg = new Microsoft.Win32.OpenFileDialog();
+                dlg.FileName = "new_capture";
+                dlg.DefaultExt = ".pcap";
+                dlg.Filter = "Libpcap capture file (.pcap)|*.pcap";
+
+                Nullable<bool> res = dlg.ShowDialog();
+
+                if (res != true)
+                    return;
+            }
+
+            var op = options ?? new DumpOptions()
+            {
+                Path = dlg.FileName,
+                Count = int.MaxValue,
+                Durance = TimeSpan.MaxValue,
+                filter = null
+            };
+            Ssource.CreateCaptureTask(des, op);
         }
         #endregion
 
@@ -199,7 +219,7 @@ namespace TrafficAnalysis
             DeviceDes[] items = Ssource.MonitoringList.ToArray();
             foreach (var des in items)
             {
-                Ssource.StopCapture(des);
+                Ssource.StopStatistic(des);
             }
         }
 
@@ -212,13 +232,13 @@ namespace TrafficAnalysis
         private void ShowInMonitor_Checked(object sender, RoutedEventArgs e)
         {
             DeviceDes des = DeviceList.SelectedValue as DeviceDes;
-            Ssource.StartCapture(des);
+            Ssource.StartStatistic(des);
         }
 
         private void ShowInMonitor_Unchecked(object sender, RoutedEventArgs e)
         {
             DeviceDes des = DeviceList.SelectedValue as DeviceDes;
-            Ssource.StopCapture(des);
+            Ssource.StopStatistic(des);
         }
 
         private void CaptureThis_Checked(object sender, RoutedEventArgs e)
