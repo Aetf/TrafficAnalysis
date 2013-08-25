@@ -242,7 +242,9 @@ namespace TrafficAnalysis.Pages
             TItem = tItem;
             Window = window;
 
-            Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
+            if(IncreaseLoadCnt())
+                Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
+
             tItem.Header = Header;
 
             CommandBindings.Add(new CommandBinding(MainWindow.ReassembleTCP,
@@ -258,12 +260,30 @@ namespace TrafficAnalysis.Pages
 
         public void OnTabItemDetaching(MainWindow window, TabItem tItem)
         {
-            Window.FileAnalyzeTabGroup.Visibility = Visibility.Collapsed;
+            if(DecreaseLoadCnt())
+                Window.FileAnalyzeTabGroup.Visibility = Visibility.Collapsed;
         }
 
         public TabItem TItem { get; private set; }
         public MainWindow Window { get; private set; }
         public string Header { get { return System.IO.Path.GetFileName(filePath); } }
+        #endregion
+
+        #region Static Members
+
+        // Fix bug: FileAnalyzeTabGroup contextrual ribbon tab donot appear correctly.
+        static int loadCnt = 0;
+        static bool IncreaseLoadCnt()
+        {
+            loadCnt++;
+            return loadCnt == 1;
+        }
+        static bool DecreaseLoadCnt()
+        {
+            loadCnt--;
+            return loadCnt == 0;
+        }
+        // End fix
         #endregion
     }
 }
