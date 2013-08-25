@@ -222,7 +222,7 @@ namespace TrafficAnalysis.Pages
 
         #region Public
         
-        void ReassembleTCP()
+        public void ReassembleTCP()
         {
             var dlg = new CommonOpenFileDialog();
             dlg.IsFolderPicker = true;
@@ -242,19 +242,12 @@ namespace TrafficAnalysis.Pages
             TItem = tItem;
             Window = window;
 
-            if(IncreaseLoadCnt())
-                Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
-
             tItem.Header = Header;
 
-            CommandBindings.Add(new CommandBinding(MainWindow.ReassembleTCP,
-                (o, e) =>
-                {
-                    if (Window.Tabs.SelectedContent == this)
-                        ReassembleTCP();
-                }));
+            if (IncreaseLoadCnt())
+                Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
 
-            // Load the file.
+            // Load the file async.
             Load();
         }
 

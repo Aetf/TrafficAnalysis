@@ -68,6 +68,17 @@ namespace TrafficAnalysis
             {
                 OpenNewFluxAnalyze();
             }));
+            CommandBindings.Add(new CommandBinding(MainWindow.ReassembleTCP, (o, e) =>
+            {
+                if (Tabs.SelectedContent is FileAnalyzePage)
+                {
+                    FileAnalyzePage page = Tabs.SelectedContent as FileAnalyzePage;
+                    page.ReassembleTCP();
+                }
+            }, (o, e) =>
+            {
+                e.CanExecute = Tabs.SelectedContent is FileAnalyzePage;
+            }));
         }
 
         #endregion
@@ -129,8 +140,6 @@ namespace TrafficAnalysis
                 FileAnalyzePage page = new FileAnalyzePage(dlg.FileName);
                 pages.Add(page);
                 ActivateDocument.Execute(page, this);
-
-                Tabs.SelectedIndex = pages.Count - 1;
             }
         }
         #endregion
