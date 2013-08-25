@@ -217,6 +217,11 @@ namespace TrafficAnalysis.Pages
             }
         }
 
+        void SelectedPageChanged(object sender, SelectionChangedEventArgs e)
+        {
+            bool v = Window.Tabs.SelectedItem is FileAnalyzePage;
+            Window.FileAnalyzeTabGroup.Visibility = v ? Visibility.Visible : Visibility.Collapsed;
+        }
         
         #endregion
 
@@ -247,12 +252,15 @@ namespace TrafficAnalysis.Pages
             if (IncreaseLoadCnt())
                 Window.FileAnalyzeTabGroup.Visibility = Visibility.Visible;
 
+            Window.Tabs.SelectionChanged += SelectedPageChanged;
             // Load the file async.
             Load();
         }
 
         public void OnTabItemDetaching(MainWindow window, TabItem tItem)
         {
+            Window.Tabs.SelectionChanged -= SelectedPageChanged;
+
             if(DecreaseLoadCnt())
                 Window.FileAnalyzeTabGroup.Visibility = Visibility.Collapsed;
         }
