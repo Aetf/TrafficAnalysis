@@ -111,7 +111,6 @@ namespace TrafficAnalysis.DeviceDataSource
                             if (result == PacketCommunicatorReceiveResult.Ok)
                             {
                                 dumpFile.Dump(packet);
-                                OnPacketArrivaled(packet, dev);
                                 count++;
                             }
                         }
