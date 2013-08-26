@@ -62,7 +62,7 @@ namespace TrafficAnalysis.DeviceDataSource
         }
         #endregion
 
-        public StatisticsInfo(ulong bps, ulong pps)
+        public StatisticsInfo(double bps, double pps)
         {
             Bps = bps;
             Pps = pps;

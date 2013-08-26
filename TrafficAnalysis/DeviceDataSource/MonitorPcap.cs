@@ -244,7 +244,7 @@ namespace TrafficAnalysis.DeviceDataSource
                     }
 
                     StatisticsInfo ourStat = new StatisticsInfo(0, 0);
-                    long totbit = 0;
+                    double totbit = 0;
                     DateTime earlist = DateTime.MaxValue;
                     DateTime latest = DateTime.MinValue;
                     foreach (var pk in ourQueue)
@@ -265,8 +265,8 @@ namespace TrafficAnalysis.DeviceDataSource
                     }
 
                     double delay = (latest - earlist).TotalMilliseconds;
-                    ourStat.Bps = (ulong)(totbit * 1000 / delay);
-                    ourStat.Pps = (ulong)(ourQueue.Count * 1000 / delay);
+                    ourStat.Bps = totbit * 1000 / delay;
+                    ourStat.Pps = ourQueue.Count * 1000 / delay;
 
                     _Statistics[dev.Name] = ourStat;
                 }
