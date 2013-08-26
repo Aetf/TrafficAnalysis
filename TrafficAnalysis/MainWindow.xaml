@@ -41,7 +41,7 @@
                         <Label Style="{StaticResource BigFont}" Name="bpsLabel1"
                                Canvas.Top="-9" Canvas.Left="0" Padding="0" HorizontalContentAlignment="Left"
                                Content="N/A" />
-                        <Label Style="{StaticResource SmallFont}" Name="bpsLabel2"
+                        <Label Style="{StaticResource SmallFontDigi}" Name="bpsLabel2"
                                    Canvas.Bottom="0" Canvas.Right="55"
                                    Padding="0"
                                    Content="N/A" />
@@ -56,7 +56,7 @@
                         <Label Style="{StaticResource BigFont}" Name="ppsLabel1"
                                Canvas.Top="-9" Canvas.Left="0" Padding="0" HorizontalContentAlignment="Left"
                                Content="N/A" />
-                        <Label Style="{StaticResource SmallFont}" Name="ppsLabel2"
+                        <Label Style="{StaticResource SmallFontDigi}" Name="ppsLabel2"
                                    Canvas.Bottom="0" Canvas.Right="55"
                                    Padding="0"
                                    Content="N/A" />

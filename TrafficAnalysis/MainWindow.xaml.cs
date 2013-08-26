@@ -111,7 +111,7 @@ namespace TrafficAnalysis
             }
             int i = (int) bps;
             int r = (int) ((bps - i) * 100);
-            bpsLabel1.Content = i.ToString();
+            bpsLabel1.Content = i.ToString("D3");
             bpsLabel2.Content = "." + r.ToString("D2");
             bpsLabel3.Content = bpsUnit[multiper];
         }
@@ -130,7 +130,7 @@ namespace TrafficAnalysis
             }
             int i = (int)pps;
             int r = (int) ((pps - i) * 100);
-            ppsLabel1.Content = i.ToString();
+            ppsLabel1.Content = i.ToString("D3");
             ppsLabel2.Content = "." + r.ToString("D2");
             ppsLabel3.Content = ppsUnit[multiper];
         }

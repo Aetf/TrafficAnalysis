@@ -13,9 +13,19 @@
              xmlns:ace="clr-namespace:TrafficAnalysis.ChartEx"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+
+        <!-- Third party fonts -->
+        <FontFamily x:Key="DigifaceWide">/TrafficAnalysis;Component/resources/#DigifaceWide Regular</FontFamily>
+        
         <Style x:Key="BigFont" TargetType="Label">
             <Setter Property="FontSize" Value="48" />
             <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontFamily" Value="{StaticResource DigifaceWide}" />
+        </Style>
+
+        <Style x:Key="SmallFontDigi" TargetType="Label">
+            <Setter Property="FontFamily" Value="{StaticResource DigifaceWide}" />
+            <Setter Property="FontSize" Value="16" />
         </Style>
 
         <Style x:Key="SmallFont" TargetType="Label">
