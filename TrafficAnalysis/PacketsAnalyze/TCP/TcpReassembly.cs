@@ -11,7 +11,7 @@ using PcapDotNet.Packets.Transport;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
-    public class TcpReassembly
+    public class TcpReassembly : IDisposable
     {
         #region Connection Pool
         private Dictionary<TcpPair, TcpConnection> connPool = new Dictionary<TcpPair, TcpConnection>();
@@ -30,55 +30,18 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
 
         private void CloseConnection(TcpConnection conn)
         {
-            TcpPair pair = conn.Pair;
-            string aip = pair.AIP.ToString().Replace(':', ' ');
-            string bip = pair.BIP.ToString().Replace(':', ' ');
-            string[] name = new string[]
-            {
-                string.Format("S[{0}][{1}]D[{2}][{3}]_{4}", aip, pair.APort, bip, pair.BPort, conn.ConnectionID),
-                string.Format("S[{0}][{1}]D[{2}][{3}]_{4}", bip, pair.BPort, aip, pair.APort, conn.ConnectionID)
-            };
+            connPool.Remove(conn.Pair);
 
-            for (int i = 0; i != 2; i++)
-            {
-                FileInfo info = new FileInfo(Path.Combine(new string[] { SavePath, name[i] }));
-                using (var fs = info.Create())
-                {
-                    conn.Stream(i).Data.Seek(0, SeekOrigin.Begin);
-                    conn.Stream(i).Data.CopyTo(fs);
-                }
-            }
-
-            connPool.Remove(pair);
+            RaiseConnectionFinished(conn);
         }
         #endregion
-
-        public string SavePath { get; private set; }
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="saveDir">The directory to save stream files</param>
-        public TcpReassembly(string saveDir)
+        public TcpReassembly()
         {
-            FileInfo info = new FileInfo(saveDir);
-            if (!info.Exists)
-            {
-                Directory.CreateDirectory(saveDir);
-                SavePath = saveDir;
-            }
-            else
-            {
-                if ((info.Attributes & FileAttributes.Directory) == 0)
-                {
-                    SavePath = info.DirectoryName;
-                }
-                else
-                {
-                    SavePath = info.FullName;
-                }
-            }
-
             TcpConnection.SetNextID(0);
         }
 
@@ -110,7 +73,6 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
 
         /// <summary>
         /// Call when a flux file is ended, cause all unclosed connections to be closed
-        /// and written to file.
         /// </summary>
         public void Finish()
         {
@@ -376,5 +338,37 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             return false;
         }
 
+
+        #region Events
+
+        #region ConnectionFinished
+        /// <summary>
+        /// Raised when a complete tcp connection is detected.
+        /// </summary>
+        public event ConnectionFinishedEventHandler ConnectionFinished;
+        public class ConnectionFinishedEventArgs : EventArgs
+        {
+            public TcpConnection Connection { get; private set; }
+            public ConnectionFinishedEventArgs(TcpConnection connection)
+            {
+                Connection = connection;
+            }
+        }
+        public delegate void ConnectionFinishedEventHandler(object sendor, ConnectionFinishedEventArgs e);
+        private void RaiseConnectionFinished(TcpConnection conn)
+        {
+            if (ConnectionFinished != null)
+            {
+                ConnectionFinished(this, new ConnectionFinishedEventArgs(conn));
+            }
+        }
+        #endregion
+
+        #endregion
+
+        public void Dispose()
+        {
+            Finish();
+        }
     }
 }

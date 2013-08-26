@@ -98,25 +98,30 @@ namespace TrafficAnalysis.DeviceDataSource
                 throw new InvalidOperationException("No file has been loaded");
             }
 
-            TcpReassembly tcpre = new TcpReassembly(saveDir);
-
-            // Read all packets from file until EOF
-            using (PacketCommunicator communicator = dev.Open())
+            using (TcpReassembly tcpre = new TcpReassembly())
             {
-                communicator.SetFilter("tcp");
-                communicator.ReceivePackets(0, p => 
+                // Save complete connections to files
+                ConnectionToFile ctf = new ConnectionToFile(saveDir);
+                tcpre.ConnectionFinished += (o, e) => ctf.Save(e.Connection);
+
+                // Read all packets from file until EOF
+                using (PacketCommunicator communicator = dev.Open())
+                {
+                    communicator.SetFilter("tcp");
+                    communicator.ReceivePackets(0, p =>
                     {
                         tcpre.AddPacket(p.Ethernet.IpV4);
                     });
+                }
             }
-            tcpre.Finish();
 
+            // Open folder
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-                {
-                    UseShellExecute = true,
-                    FileName = saveDir,
-                    Verb = "open"
-                });
+            {
+                UseShellExecute = true,
+                FileName = saveDir,
+                Verb = "open"
+            });
         }
 
         public RangeStatisticsInfo Query(TimeSpan start, TimeSpan end)
