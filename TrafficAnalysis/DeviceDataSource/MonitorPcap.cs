@@ -108,9 +108,12 @@ namespace TrafficAnalysis.DeviceDataSource
                             Packet packet;
                             var result = communicator.ReceivePacket(out packet);
 
-                            dumpFile.Dump(packet);
-                            OnPacketArrivaled(packet, dev);
-                            count++;
+                            if (result == PacketCommunicatorReceiveResult.Ok)
+                            {
+                                dumpFile.Dump(packet);
+                                OnPacketArrivaled(packet, dev);
+                                count++;
+                            }
                         }
                     }
                 }

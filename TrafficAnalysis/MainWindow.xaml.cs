@@ -39,33 +39,58 @@ namespace TrafficAnalysis
         private void BindingCommands()
         {
             CommandBindings.Add(new CommandBinding(CloseDocument,
-                (o, e) => pages.Remove((ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter)),
-                (o, e) =>
-                {
-                    ITabPage page = (ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter);
-                    e.CanExecute = !(page is DetialMonitorPage);
-                }
-                ));
-            CommandBindings.Add(new CommandBinding(ActivateDocument, (o, e) =>
+            (o, e) => pages.Remove((ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter)),
+            (o, e) =>
+            {
+                ITabPage page = (ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter);
+                e.CanExecute = !(page is DetialMonitorPage);
+            }
+            ));
+
+            CommandBindings.Add(new CommandBinding(ActivateDocument,
+            (o, e) =>
             {
                 Tabs.SelectedItem = e.Parameter;
                 UI.OverflowTabHeaderObserver.EnsureActiveTabVisible(Tabs);
             }));
-            CommandBindings.Add(new CommandBinding(NewFluxAnalyze, (o, e) =>
+
+            CommandBindings.Add(new CommandBinding(NewFluxAnalyze,
+            (o, e) =>
             {
                 OpenNewFluxAnalyze();
             }));
-            CommandBindings.Add(new CommandBinding(MainWindow.ReassembleTCP, (o, e) =>
+
+            CommandBindings.Add(new CommandBinding(MainWindow.ReassembleTCP,
+            (o, e) =>
             {
                 if (Tabs.SelectedContent is FileAnalyzePage)
                 {
                     FileAnalyzePage page = Tabs.SelectedContent as FileAnalyzePage;
                     page.ReassembleTCP();
                 }
-            }, (o, e) =>
+            },
+            (o, e) => e.CanExecute = Tabs.SelectedContent is FileAnalyzePage));
+
+            CommandBindings.Add(new CommandBinding(MainWindow.CreateNewCapture,
+            (o, e) =>
             {
-                e.CanExecute = Tabs.SelectedContent is FileAnalyzePage;
-            }));
+                DeviceDes des = DeviceCombo.SelectedItem as DeviceDes;
+                if ((bool)e.Parameter)
+                {
+                    StartNewCaptureDetial dlg = new StartNewCaptureDetial(des);
+                    dlg.Owner = this;
+                    bool res = dlg.ShowDialog() ?? false;
+                    if (res)
+                    {
+                        StartNewCaptureTask(des, dlg.Options);
+                    }
+                }
+                else
+                {
+                    StartNewCaptureTask(des);
+                }
+            },
+            (o, e) => e.CanExecute = DeviceCombo.SelectedItem != null));
         }
 
         #endregion
@@ -160,7 +185,8 @@ namespace TrafficAnalysis
                 Durance = TimeSpan.MaxValue,
                 filter = null
             };
-            Ssource.CreateCaptureTask(des, op);
+            var task = Ssource.CreateCaptureTask(des, op).Item1;
+            task.ContinueWith((o) => MessageBox.Show("Task Complete!"));
         }
         #endregion
 
@@ -267,6 +293,7 @@ namespace TrafficAnalysis
         public static readonly RoutedCommand ActivateDocument = new RoutedCommand();
         public static readonly RoutedCommand NewFluxAnalyze = new RoutedCommand();
         public static readonly RoutedCommand ReassembleTCP = new RoutedCommand();
+        public static readonly RoutedCommand CreateNewCapture = new RoutedCommand();
         #endregion
     }
 }

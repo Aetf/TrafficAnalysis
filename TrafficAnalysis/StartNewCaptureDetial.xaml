@@ -32,9 +32,10 @@
                                     Margin="10 0 5 5" Width="70"
                                     HorizontalAlignment="Left" VerticalAlignment="Center"
                                     Minimum="0"/>
-                <xctk:TimePicker Name="TotalDurance" Grid.Column="1" Grid.Row="1"
-                                 Margin="10 5 10 0" Width="70"
-                                 HorizontalAlignment="Left"/>
+                <xctk:DateTimeUpDown Name="TotalDurance" Grid.Column="1" Grid.Row="1"
+                                     Margin="10 5 10 0" Width="70"
+                                     HorizontalAlignment="Left"
+                                     Format="Custom" FormatString="H:mm"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="过滤器" Margin="5">
@@ -47,8 +48,10 @@
             </StackPanel>
         </GroupBox>
         <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Margin="5">
-            <Button Margin="10 0 10 0" Padding="5 1" Content="开始" Click="Ok_Click"/>
-            <Button Margin="10 0 10 0" Padding="5 1" Content="取消" Click="Cancel_Click"/>
+            <Button Margin="10 0 10 0" Padding="5 1"
+                    Content="开始" IsDefault="True" Click="Ok_Click"/>
+            <Button Margin="10 0 10 0" Padding="5 1"
+                    Content="取消" IsCancel="True" Click="Cancel_Click"/>
         </StackPanel>
     </Grid>
 </Window>

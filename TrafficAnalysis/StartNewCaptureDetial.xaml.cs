@@ -33,6 +33,8 @@ namespace TrafficAnalysis
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = true;
+
             TimeSpan durance = TimeSpan.MaxValue;
             if (TotalDurance.Value.HasValue)
             {
@@ -48,6 +50,8 @@ namespace TrafficAnalysis
                 Durance = (useTotalDurance.IsChecked ?? false) ? durance : TimeSpan.MaxValue,
 
             };
+
+            Close();
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -57,7 +61,7 @@ namespace TrafficAnalysis
 
         private void browseBtn_Click(object sender, RoutedEventArgs e)
         {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
             dlg.FileName = "new_capture";
             dlg.DefaultExt = ".pcap";
             dlg.Filter = "Libpcap capture file (.pcap)|*.pcap";
