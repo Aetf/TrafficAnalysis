@@ -40,7 +40,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// </summary>
         public bool IsFinished { get; internal set; }
 
-        private MemoryStream dataStream = new MemoryStream(65535);
+        private MemoryStream dataStream = new MemoryStream();
         public MemoryStream Data
         {
             get { return dataStream; }
