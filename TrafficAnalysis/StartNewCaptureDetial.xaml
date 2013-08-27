@@ -36,7 +36,7 @@
                 <xctk:DateTimeUpDown Name="TotalDurance" Grid.Column="1" Grid.Row="1"
                                      Margin="10 5 10 0" Width="70"
                                      HorizontalAlignment="Left"
-                                     Format="Custom" FormatString="H:mm"/>
+                                     Format="Custom" FormatString="H:mm:ss"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="过滤器" Margin="5">
