@@ -38,6 +38,11 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         }
         #endregion
 
+        public HttpToFiles(string saveDir)
+        {
+            WorkFolder = saveDir;
+        }
+
         private void FormatBody(HttpResponse rpy)
         {
             ContentType type = new ContentType(rpy.ContentType);
@@ -46,6 +51,11 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
         public void OutputContent(HttpResponse rpy)
         {
+            if (rpy.Body == null || rpy.Body.Length == 0)
+            {
+                return;
+            }
+
             FormatBody(rpy);
 
             DirectoryInfo gpwd = Directory.CreateDirectory(workFolder);
@@ -57,7 +67,6 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
             // Decide the file name.
             ContentType type = new ContentType(rpy.ContentType);
-            string ext = MimeTypes.GetExt(type.MediaType);
 
             // Try from mime first.
             string name = type.Name;
@@ -74,15 +83,18 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             // Generate a name
             if (string.IsNullOrWhiteSpace(name))
             {
-                name = rpy.ConnectionID.ToString();
+                string ext = MimeTypes.GetExt(type.MediaType);
+                name = rpy.ConnectionID.ToString() + ext;
             }
 
             // If file exists, append a number
-            string destfile = Path.Combine(pwd.FullName, name + ext);
+            string destfile = Path.Combine(pwd.FullName, name);
             int num = 1;
             while (File.Exists(destfile))
             {
-                destfile = Path.Combine(pwd.FullName, string.Format("{0}_{1}{2}", name, num, ext));
+                string n = Path.GetFileNameWithoutExtension(name);
+                string e = Path.GetExtension(name);
+                destfile = Path.Combine(pwd.FullName, string.Format("{0}_{1}{2}", n, num, e));
                 num++;
             }
 

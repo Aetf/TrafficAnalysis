@@ -6,6 +6,7 @@ using PcapDotNet.Packets;
 using TrafficAnalysis.PacketsAnalyze;
 using TrafficAnalysis.PacketsAnalyze.TCP;
 using System.ComponentModel;
+using TrafficAnalysis.PacketsAnalyze.HTTP;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -112,6 +113,47 @@ namespace TrafficAnalysis.DeviceDataSource
                     {
                         tcpre.AddPacket(p.Ethernet.IpV4);
                     });
+                }
+            }
+
+            // Open folder
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+            {
+                UseShellExecute = true,
+                FileName = saveDir,
+                Verb = "open"
+            });
+        }
+
+        // Long time operation
+        public void HttpReconstruct(string saveDir)
+        {
+            if (!fileLoaded)
+            {
+                throw new InvalidOperationException("No file has been loaded");
+            }
+
+            using (TcpReassembly tcpre = new TcpReassembly())
+            {
+                // Reconstruct http files
+                HttpReconstructor httpRecon = new HttpReconstructor();
+                tcpre.ConnectionFinished += (o, e) => httpRecon.OnConnectionFinished(e.Connection);
+
+                // Read all packets from file until EOF
+                using (PacketCommunicator communicator = dev.Open())
+                {
+                    communicator.SetFilter("tcp");
+                    communicator.ReceivePackets(0, p =>
+                    {
+                        tcpre.AddPacket(p.Ethernet.IpV4);
+                    });
+                }
+
+                // Save result to files
+                HttpToFiles htf = new HttpToFiles(saveDir);
+                foreach (var rpy in httpRecon.ResponseList)
+                {
+                    htf.OutputContent(rpy);
                 }
             }
 

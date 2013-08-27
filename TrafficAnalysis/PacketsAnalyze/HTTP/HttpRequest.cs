@@ -15,7 +15,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         public int ParseRequestURI(Byte[] data, int index)
         {
             int pos = index;
-            while (data[pos] != 0x20)  // data[pos] != '<space>'
+            while (data[pos] != 0x20)  // data[pos] == '<space>'
             {
                 pos++;
             }

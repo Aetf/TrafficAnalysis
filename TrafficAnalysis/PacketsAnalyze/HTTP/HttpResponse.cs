@@ -13,7 +13,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             Body = null;
             OtherHeaders = new Dictionary<string, string>();
             TransferEncoding = "";
-            ContentType = "";
+            ContentType = "plain/text";
         }
 
         #region Headers
@@ -42,8 +42,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             }
             int count = pos - index;
 
-            TransferEncoding = ASCIIEncoding.ASCII.GetString(data, index, count);
-            TransferEncoding.TrimEnd();
+            TransferEncoding = ASCIIEncoding.ASCII.GetString(data, index, count).TrimEnd();
 
             return count;
         }

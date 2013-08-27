@@ -239,6 +239,19 @@ namespace TrafficAnalysis.Pages
                 Fsource.TcpStreamReassemble(dlg.FileName);
             }
         }
+
+        public void ReconstructHTTP()
+        {
+            var dlg = new CommonOpenFileDialog();
+            dlg.IsFolderPicker = true;
+
+            var res = dlg.ShowDialog();
+
+            if (res == CommonFileDialogResult.Ok)
+            {
+                Fsource.HttpReconstruct(dlg.FileName);
+            }
+        }
         #endregion
 
         #region ITabPage Members

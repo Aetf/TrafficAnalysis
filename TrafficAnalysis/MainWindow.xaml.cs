@@ -71,6 +71,17 @@ namespace TrafficAnalysis
             },
             (o, e) => e.CanExecute = Tabs.SelectedContent is FileAnalyzePage));
 
+            CommandBindings.Add(new CommandBinding(MainWindow.ReconstructHTTP,
+            (o, e) =>
+            {
+                if (Tabs.SelectedContent is FileAnalyzePage)
+                {
+                    FileAnalyzePage page = Tabs.SelectedContent as FileAnalyzePage;
+                    page.ReconstructHTTP();
+                }
+            },
+            (o, e) => e.CanExecute = Tabs.SelectedContent is FileAnalyzePage));
+
             CommandBindings.Add(new CommandBinding(MainWindow.CreateNewCapture,
             (o, e) =>
             {
@@ -294,6 +305,7 @@ namespace TrafficAnalysis
         public static readonly RoutedCommand NewFluxAnalyze = new RoutedCommand();
         public static readonly RoutedCommand ReassembleTCP = new RoutedCommand();
         public static readonly RoutedCommand CreateNewCapture = new RoutedCommand();
+        public static readonly RoutedCommand ReconstructHTTP = new RoutedCommand();
         #endregion
     }
 }

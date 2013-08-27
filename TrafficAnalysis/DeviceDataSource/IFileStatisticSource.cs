@@ -46,6 +46,12 @@ namespace TrafficAnalysis.DeviceDataSource
         void TcpStreamReassemble(string saveDir);
 
         /// <summary>
+        /// Reconstruct files transfered by http in the flux file.
+        /// </summary>
+        /// <param name="saveDir"></param>
+        void HttpReconstruct(string saveDir);
+
+        /// <summary>
         /// Reset to load a new file.
         /// </summary>
         void Reset();

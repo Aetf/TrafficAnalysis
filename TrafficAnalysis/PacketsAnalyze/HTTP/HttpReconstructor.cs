@@ -24,6 +24,14 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
         public void OnConnectionFinished(TcpConnection conn)
         {
+            // We only want http stream
+            if (conn.Pair.APort != HttpStatics.Httpd_Port
+                && conn.Pair.BPort != HttpStatics.Httpd_Port)
+                return;
+
+            RequestList.Clear();
+            ResponseList.Clear();
+
             // Find client direction
             int reqDir = conn.Pair.APort == HttpStatics.Httpd_Port ? 1 : 0;
             int rpyDir = 1 - reqDir;
@@ -125,10 +133,8 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         int idx = str.IndexOf(":");
                         if (idx != -1)
                         {
-                            string field = str.Substring(0, idx + 1);
-                            string value = str.Substring(idx + 1);
-                            field.Trim();
-                            value.Trim();
+                            string field = str.Substring(0, idx).Trim();
+                            string value = str.Substring(idx + 1).Trim();
                             req.OtherHeaders[field] = value;
                         }
                         else
@@ -253,9 +259,9 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
                         cur += rpy.ParseContentType(data, cur);
                     }
-                    else if(strncasecmp(data, cur, 18, "Transfer-Encoding:"))
+                    else if(strncasecmp(data, cur, 20, "\r\nTransfer-Encoding:"))
                     {
-                        cur += 18;
+                        cur += 20;
                         // skip leading spaces
                         while (data[cur] == 0x20) // data[cur] == '<space>'
                             cur++;
@@ -282,10 +288,8 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         int idx = str.IndexOf(":");
                         if (idx != -1)
                         {
-                            string field = str.Substring(0, idx + 1);
-                            string value = str.Substring(idx + 1);
-                            field.Trim();
-                            value.Trim();
+                            string field = str.Substring(0, idx).Trim();
+                            string value = str.Substring(idx + 1).Trim();
                             rpy.OtherHeaders[field] = value;
                         }
                         else
@@ -319,7 +323,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         // for the reply to HEAD
                         // for a 1xx
                         // for a 204 (no content), 205 (reset content), or 304 (not modified).
-                        if (rpy.Method == HttpMethod.Head
+                        if (RequestList[reqIdx].Method == HttpMethod.Head
                             || rpy.ResponseCode < 200
                             || rpy.ResponseCode == 204
                             || rpy.ResponseCode == 205
@@ -441,6 +445,9 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         #region Helpers
         private bool strncasecmp(Byte[] strData, int byteIndex, int byteCount, string str)
         {
+            if (byteIndex + byteCount > strData.Length)
+                return false;
+
             Decoder de = Encoding.ASCII.GetDecoder();
             Char[] chars = new Char[byteCount];
             int chlen = de.GetChars(strData, byteIndex, byteCount, chars, 0, true);

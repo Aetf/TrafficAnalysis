@@ -105,9 +105,11 @@
                 </RibbonGroup>
             </RibbonTab>
             <RibbonTab Header="分析选项" ContextualTabGroupHeader="文件分析">
-                <RibbonGroup Header="Tcp流">
-                    <RibbonButton Label="重组" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
+                <RibbonGroup Header="Tcp">
+                    <RibbonButton Label="重组TCP流" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
                                   Command="{x:Static a:MainWindow.ReassembleTCP}"/>
+                    <RibbonButton Label="还原HTTP文件" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
+                                  Command="{x:Static a:MainWindow.ReconstructHTTP}"/>
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
