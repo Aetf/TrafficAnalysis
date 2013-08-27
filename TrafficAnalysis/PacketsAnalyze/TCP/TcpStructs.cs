@@ -51,6 +51,11 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             b = epb;
         }
 
+        public IPEndPoint EndPoint(int direction)
+        {
+            return direction == 0 ? AEP : BEP;
+        }
+
         public bool Equals(IPEndPoint epa, IPEndPoint epb)
         {
             return (a.Equals(epa) && b.Equals(epb))

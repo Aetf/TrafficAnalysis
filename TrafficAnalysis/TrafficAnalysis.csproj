@@ -111,6 +111,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DeviceDataSource\ReadOnlyObservableDeviceList.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpReconstructor.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpRequest.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpResponse.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpStatics.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpToFiles.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\Parses.cs" />
+    <Compile Include="PacketsAnalyze\MimeTypes.cs" />
     <Compile Include="PacketsAnalyze\TCP\ConnectionToFile.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpConnection.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpControlBlock.cs" />
@@ -204,7 +211,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Resource Include="resources\digifaw.ttf" />
+    <Resource Include="Resources\digifaw.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
