@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TrafficAnalysis.PacketsAnalyze.TCP;
 using TrafficAnalysis.PacketsAnalyze;
 using System.Net.Mime;
+using System.Net;
 
 namespace TrafficAnalysis.PacketsAnalyze.HTTP
 {
@@ -343,7 +344,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                                 {
                                     int t;
                                     int w;
-                                    if ((w = Parses.ParseInt(data, pos, out t)) > 0)
+                                    if ((w = Parses.ParseHex(data, pos, out t)) > 0)
                                     {
                                         if (t == 0)
                                         {
@@ -361,7 +362,11 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
                                 rpy.ContentLength = pos - cur + 1;
                                 rpy.Body = new Byte[rpy.ContentLength];
-                                Array.Copy(data, cur, rpy.Body, 0, rpy.ContentLength);
+                                // We should check in case we didn't captured complete stream.
+                                if (rpy.ContentLength + cur > data.Length)
+                                    Array.Copy(data, cur, rpy.Body, 0, data.Length - cur);
+                                else
+                                    Array.Copy(data, cur, rpy.Body, 0, rpy.ContentLength);
                                 cur += rpy.ContentLength;
 
                                 // TODO: There may also tailors to deal with
@@ -370,7 +375,10 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                             {
                                 // Use content-length header if one was present.
                                 rpy.Body = new Byte[rpy.ContentLength];
-                                Array.Copy(data, cur, rpy.Body, 0, rpy.ContentLength);
+                                if (rpy.ContentLength + cur > data.Length)
+                                    Array.Copy(data, cur, rpy.Body, 0, data.Length - cur);
+                                else
+                                    Array.Copy(data, cur, rpy.Body, 0, rpy.ContentLength);
                                 cur += rpy.ContentLength;
                             }
                         }
@@ -378,7 +386,10 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         {
                             // Use content-length header if one was present.
                             rpy.Body = new Byte[rpy.ContentLength];
-                            Array.Copy(data, cur, rpy.Body, 0, rpy.ContentLength);
+                            if (rpy.ContentLength + cur > data.Length)
+                                Array.Copy(data, cur, rpy.Body, 0, data.Length - cur);
+                            else
+                                Array.Copy(data, cur, rpy.Body, 0, rpy.ContentLength);
                             cur += rpy.ContentLength;
                         }
                         else

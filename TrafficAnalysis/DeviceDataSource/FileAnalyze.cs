@@ -137,7 +137,17 @@ namespace TrafficAnalysis.DeviceDataSource
             {
                 // Reconstruct http files
                 HttpReconstructor httpRecon = new HttpReconstructor();
-                tcpre.ConnectionFinished += (o, e) => httpRecon.OnConnectionFinished(e.Connection);
+                // Save result to files
+                HttpExtractFiles htf = new HttpExtractFiles(saveDir);
+
+                tcpre.ConnectionFinished += (o, e) =>
+                {
+                    httpRecon.OnConnectionFinished(e.Connection);
+                    foreach (var rpy in httpRecon.ResponseList)
+                    {
+                        htf.OutputContent(rpy);
+                    }
+                };
 
                 // Read all packets from file until EOF
                 using (PacketCommunicator communicator = dev.Open())
@@ -149,12 +159,10 @@ namespace TrafficAnalysis.DeviceDataSource
                     });
                 }
 
-                // Save result to files
-                HttpExtractFiles htf = new HttpExtractFiles(saveDir);
-                foreach (var rpy in httpRecon.ResponseList)
-                {
-                    htf.OutputContent(rpy);
-                }
+                // Close all unfinished connection
+                tcpre.Finish();
+
+                
             }
 
             // Open folder

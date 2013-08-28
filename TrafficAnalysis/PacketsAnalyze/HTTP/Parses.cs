@@ -8,19 +8,19 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 {
     public static class Parses
     {
-        public static int ParseInt(Byte[] data, int index, out int value)
+        public static int ParseHex(Byte[] data, int index, out int value)
         {
             value = 0;
             int pos = index;
 
-            if (data[pos] < 0x30 || data[pos] > 0x39) // !('0' <= data[pos] <= '9')
+            if (!IsHexDigit(data[pos]))
             {
                 // Don't start with a digit, return
                 return 0;
             }
 
             // Find the end of the number
-            while (data[pos] >= 0x30 && data[pos] <= 0x39) // '0' <= data[pos] <= '9'
+            while (IsHexDigit(data[pos])) // data[pos]  match  [0-9a-fA-F]
                 pos++;
 
             // record the width
@@ -32,12 +32,28 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             int factor = 1;
             while (pos >= index)
             {
-                value += factor * (data[pos] - 0x30); // data[i] - '0'
-                factor *= 10;
+                int digit = 0;
+                if (data[pos] >= 0x61)
+                    digit = data[pos] - 0x61 + 10; // data[i] - 'a'
+                else if (data[pos] >= 0x41)
+                    digit = data[pos] - 0x41 + 10; // data[i] - 'A'
+                else
+                    digit = data[pos] - 0x30; // data[i] - '0'
+
+                value += factor * digit;
+                factor *= 16;
                 pos--;
             }
 
             return width;
+        }
+
+
+        private static bool IsHexDigit(Byte ch)
+        {
+            return (ch >= 0x30 && ch <= 0x39)  // '0' <= ch <= '9'
+                || (ch >= 0x41 && ch <= 0x46)  // 'A' <= ch <= 'F'
+                || (ch >= 0x61 && ch <= 0x66); // 'a' <= ch <= 'f'
         }
     }
 }

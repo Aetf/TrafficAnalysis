@@ -47,8 +47,46 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         private void FormatBody(HttpResponse rpy)
         {
             ContentType type = new ContentType(rpy.ContentType);
+            // First we must deal chunked message
+            if (rpy.TransferEncoding.Contains("chunked"))
+            {
+                using (MemoryStream ss = new MemoryStream())
+                {
+                    int pos = 0;
+                    while (pos < rpy.Body.Length)
+                    {
+                        int t;
+                        int w;
+                        if ((w = Parses.ParseHex(rpy.Body, pos, out t)) > 0)
+                        {
+                            if (t == 0)
+                            {
+                                pos += 2;
+                                break;
+                            }
+                            // skip length
+                            pos += w + 2;
+                            // save content
+                            ss.Write(rpy.Body, pos, t);
+                            // skip to next chunk
+                            pos += t + 2;
+                        }
+                        else
+                        {
+                            pos++;
+                        }
+                    }
+
+                    rpy.Body = ss.ToArray();
+                    rpy.ContentLength = rpy.Body.Length;
+                }
+            }
+
             // TODO: deal with multipart content type
-            if (rpy.OtherHeaders["Content-Encoding"].Contains("gzip"))
+
+            // Decompress if needed
+            if (rpy.OtherHeaders.ContainsKey("Content-Encoding")
+             && rpy.OtherHeaders["Content-Encoding"].Contains("gzip"))
             {
                 using (MemoryStream mstream = new MemoryStream(rpy.Body))
                 {
@@ -98,7 +136,25 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             {
                 if (rpy.Request != null)
                 {
-                    name = rpy.Request.RequestURI.Substring(rpy.Request.RequestURI.LastIndexOf("/") + 1);
+                    string str = rpy.Request.RequestURI;
+                    int qpos = str.IndexOf('?');
+                    if (qpos == -1)
+                    {
+                        int s = str.LastIndexOf('/');
+                        name = str.Substring(s + 1);
+                    }
+                    else
+                    {
+                        int s = str.LastIndexOf('/', qpos);
+                        name = str.Substring(s+1, qpos - s - 1);
+                    }
+
+                    // in order to recogonize more html
+                    string ext = MimeTypes.GetExt(type.MediaType);
+                    if (!name.EndsWith(ext))
+                    {
+                        name += ext;
+                    }
                 }
             }
 
