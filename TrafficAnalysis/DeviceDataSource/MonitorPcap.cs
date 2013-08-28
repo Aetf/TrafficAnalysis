@@ -264,9 +264,17 @@ namespace TrafficAnalysis.DeviceDataSource
                         ourStat.CInfo += SingleAnalyzer.SortPacket(pk);
                     }
 
-                    double delay = (latest - earlist).TotalMilliseconds;
-                    ourStat.Bps = totbit * 1000 / delay;
-                    ourStat.Pps = ourQueue.Count * 1000 / delay;
+                    if (info.LastTimestamp != DateTime.MinValue)
+                    {
+                        double delay = (latest - info.LastTimestamp).TotalMilliseconds;
+                        ourStat.Bps = totbit * 1000 / delay;
+                        ourStat.Pps = ourQueue.Count * 1000 / delay;
+                    }
+                    else
+                    {
+                        ourStat.Bps = ourStat.Pps = 0;
+                    }
+                    info.LastTimestamp = latest;
 
                     _Statistics[dev.Name] = ourStat;
                 }
