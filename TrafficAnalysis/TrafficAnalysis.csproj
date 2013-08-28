@@ -115,7 +115,7 @@
     <Compile Include="PacketsAnalyze\HTTP\HttpRequest.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpResponse.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpStatics.cs" />
-    <Compile Include="PacketsAnalyze\HTTP\HttpToFiles.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpExtractFiles.cs" />
     <Compile Include="PacketsAnalyze\HTTP\Parses.cs" />
     <Compile Include="PacketsAnalyze\MimeTypes.cs" />
     <Compile Include="PacketsAnalyze\TCP\ConnectionToFile.cs" />

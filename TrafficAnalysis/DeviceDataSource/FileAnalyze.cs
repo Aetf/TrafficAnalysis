@@ -150,7 +150,7 @@ namespace TrafficAnalysis.DeviceDataSource
                 }
 
                 // Save result to files
-                HttpToFiles htf = new HttpToFiles(saveDir);
+                HttpExtractFiles htf = new HttpExtractFiles(saveDir);
                 foreach (var rpy in httpRecon.ResponseList)
                 {
                     htf.OutputContent(rpy);

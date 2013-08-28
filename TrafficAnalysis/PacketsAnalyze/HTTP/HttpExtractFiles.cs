@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace TrafficAnalysis.PacketsAnalyze.HTTP
 {
-    class HttpToFiles
+    class HttpExtractFiles
     {
         #region public string WorkFolder
         private string workFolder;
@@ -38,7 +39,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         }
         #endregion
 
-        public HttpToFiles(string saveDir)
+        public HttpExtractFiles(string saveDir)
         {
             WorkFolder = saveDir;
         }
@@ -47,6 +48,27 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         {
             ContentType type = new ContentType(rpy.ContentType);
             // TODO: deal with multipart content type
+            if (rpy.OtherHeaders["Content-Encoding"].Contains("gzip"))
+            {
+                using (MemoryStream mstream = new MemoryStream(rpy.Body))
+                {
+                    using (MemoryStream tstream = new MemoryStream())
+                    {
+                        using (GZipStream gstream = new GZipStream(mstream, CompressionMode.Decompress))
+                        {
+                            using (BufferedStream buf = new BufferedStream(gstream))
+                            {
+                                buf.CopyTo(tstream);
+                                rpy.Body = tstream.ToArray();
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+
+            }
         }
 
         public void OutputContent(HttpResponse rpy)
