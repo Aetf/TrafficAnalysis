@@ -345,7 +345,7 @@ namespace TrafficAnalysis.DeviceDataSource
             ppsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
             ReportProgress((int) (tot + each), "分析中...");
 
-            int delta = 15;
+            int delta = CalcDelta(plist.Count);
             for (int i = 1; i != plist.Count; i++)
             {
                 // preprocess for range query
@@ -362,6 +362,30 @@ namespace TrafficAnalysis.DeviceDataSource
                     ppsList.Add(new KeyValuePair<TimeSpan, double>(x, p));
                 }
                 ReportProgress((int) (tot + (i+1)*each), "分析中...");
+            }
+        }
+
+        private int CalcDelta(int count)
+        {
+            if (count > 300)
+            {
+                return 15;
+            }
+            else if (count > 100)
+            {
+                return 10;
+            }
+            else if (count > 50)
+            {
+                return 5;
+            }
+            else if(count > 25)
+            {
+                return 2;
+            }
+            else
+            {
+                return 1;
             }
         }
 
