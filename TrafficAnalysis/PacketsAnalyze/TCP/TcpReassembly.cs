@@ -33,6 +33,9 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
             connPool.Remove(conn.Pair);
 
             RaiseConnectionFinished(conn);
+
+            for (int i = 0; i != 2; i++)
+                conn.Stream(i).Data.Dispose();
         }
         #endregion
 
