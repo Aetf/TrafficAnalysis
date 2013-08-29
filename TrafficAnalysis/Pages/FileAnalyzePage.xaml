@@ -45,10 +45,12 @@
                                          Width="100" Height="100" />
                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Orientation="Vertical">
-                                            <TextBlock FontSize="12" FontWeight="Bold" Foreground="Black"
-                                               Text="{Binding ElementName=Pie, Path=Slice, StringFormat=#%}" />
-                                            <TextBlock FontSize="8" FontWeight="Normal" Foreground="Black"
-                                               Text="{Binding ElementName=fileAnalyzePage, Path=ProgressString}" />
+                                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="Black"
+                                                       TextAlignment="Center"
+                                                       Text="{Binding ElementName=Pie, Path=Slice, StringFormat=#%}" />
+                                            <TextBlock FontSize="14" FontWeight="Normal" Foreground="Black"
+                                                       TextAlignment="Center"
+                                                       Text="{Binding ElementName=fileAnalyzePage, Path=ProgressString}" />
                                         </StackPanel>
                                     </Grid>
                                 </ControlTemplate>
