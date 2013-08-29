@@ -194,10 +194,17 @@ namespace TrafficAnalysis
                 Path = dlg.FileName,
                 Count = int.MaxValue,
                 Durance = TimeSpan.MaxValue,
-                filter = null
+                Filter = null
             };
-            var task = Ssource.CreateCaptureTask(des, op).Item1;
-            task.ContinueWith((o) => MessageBox.Show("Task Complete!"));
+
+            CaptureMod cm = new CaptureMod()
+            {
+                Device = des,
+                Options = op
+            };
+            cm.StartCapture();
+            cm.CaptureTask.ContinueWith(
+                (o) => MessageBox.Show("Task Complete!"));
         }
         #endregion
 

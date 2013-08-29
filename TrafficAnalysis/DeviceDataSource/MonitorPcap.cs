@@ -75,53 +75,6 @@ namespace TrafficAnalysis.DeviceDataSource
             _MonitoringList.Remove(des);
         }
 
-        public Tuple<Task, CancellationTokenSource> CreateCaptureTask(DeviceDes des, DumpOptions options)
-        {
-            var dev = LivePacketDevice.AllLocalMachine.FirstOrDefault(d => d.Name.Equals(des.Name));
-            var tokenSource = new CancellationTokenSource();
-            var token = tokenSource.Token;
-
-            var task = Task.Factory.StartNew(state =>
-            {
-                // Open device
-                using (PacketCommunicator communicator = dev.Open(
-                    65535, PacketDeviceOpenAttributes.Promiscuous,
-                    250
-                    ))
-                {
-                    if (options.filter != null)
-                    {
-                        communicator.SetFilter(options.filter);
-                    }
-
-                    using (PacketDumpFile dumpFile = communicator.OpenDump(options.Path))
-                    {
-                        int count = 0;
-                        Stopwatch stopwatch = new Stopwatch();
-                        stopwatch.Start();
-
-                        while (count < options.Count
-                               && stopwatch.ElapsedMilliseconds < options.Durance.TotalMilliseconds)
-                        {
-                            token.ThrowIfCancellationRequested();
-
-                            Packet packet;
-                            var result = communicator.ReceivePacket(out packet);
-
-                            if (result == PacketCommunicatorReceiveResult.Ok)
-                            {
-                                dumpFile.Dump(packet);
-                                count++;
-                            }
-                        }
-                    }
-                }
-            }, token, TaskCreationOptions.LongRunning);
-            
-
-            return new Tuple<Task, CancellationTokenSource>(task, tokenSource);
-        }
-
         #endregion
 
         #region Private and Protected Methods

@@ -110,6 +110,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DeviceDataSource\CaptureMod.cs" />
+    <Compile Include="DeviceDataSource\ICaptureSource.cs" />
     <Compile Include="DeviceDataSource\ReadOnlyObservableDeviceList.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpReconstructor.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpRequest.cs" />

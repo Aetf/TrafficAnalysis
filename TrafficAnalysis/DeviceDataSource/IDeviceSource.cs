@@ -8,6 +8,7 @@ namespace TrafficAnalysis.DeviceDataSource
 {
     /// <summary>
     /// Interface for an abstract warpper around WinPcap
+    /// Used to run statistics on devices.
     /// </summary>
     public interface IDeviceSource
     {
@@ -17,15 +18,5 @@ namespace TrafficAnalysis.DeviceDataSource
 
         void StartStatistic(DeviceDes des);
         void StopStatistic(DeviceDes des);
-
-        Tuple<Task, CancellationTokenSource> CreateCaptureTask(DeviceDes des, DumpOptions options);
-    }
-
-    public struct DumpOptions
-    {
-        public string Path;
-        public int Count;
-        public TimeSpan Durance;
-        public string filter;
     }
 }
