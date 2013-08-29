@@ -22,7 +22,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Ribbon Name="WinRibbon" SelectedIndex="1">
+        <Ribbon Name="WinRibbon" SelectedIndex="0">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu KeyTip="F">
                     <RibbonApplicationMenuItem Header="打开流量文件" Command="{x:Static a:MainWindow.NewFluxAnalyze}"/>

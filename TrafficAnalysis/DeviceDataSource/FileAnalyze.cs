@@ -57,7 +57,7 @@ namespace TrafficAnalysis.DeviceDataSource
             FileInfo info = new FileInfo(filepath);
             totalbytes = info.Length;
 
-            ReportProgress(Prog_ReadFileStart, "读取文件...");
+            ReportProgress(ProgressSource.Load, Prog_ReadFileStart, "读取文件...");
 
 
             // Read all packets from file until EOF
@@ -66,14 +66,14 @@ namespace TrafficAnalysis.DeviceDataSource
                 communicator.ReceivePackets(0, OnPacketArrival);
             }
 
-            ReportProgress(Prog_SortPacketsStart, "对数据包排序...");
+            ReportProgress(ProgressSource.Load, Prog_SortPacketsStart, "对数据包排序...");
             plist.Sort();
 
-            ReportProgress(Prog_AnalyzePacketsStart, "分析中...");
+            ReportProgress(ProgressSource.Load, Prog_AnalyzePacketsStart, "分析中...");
             Analyze();
             fileLoaded = true;
 
-            ReportProgress(100, "完成");
+            ReportProgress(ProgressSource.Load, 100, "完成");
         }
 
         public void Reset()
@@ -99,12 +99,15 @@ namespace TrafficAnalysis.DeviceDataSource
                 throw new InvalidOperationException("No file has been loaded");
             }
 
+
+            ReportProgress(ProgressSource.TCPReassemble, 0, "分析中...");
             using (TcpReassembly tcpre = new TcpReassembly())
             {
                 // Save complete connections to files
                 ConnectionToFile ctf = new ConnectionToFile(saveDir);
                 tcpre.ConnectionFinished += (o, e) => ctf.Save(e.Connection);
 
+                int cnt = 0;
                 // Read all packets from file until EOF
                 using (PacketCommunicator communicator = dev.Open())
                 {
@@ -112,9 +115,14 @@ namespace TrafficAnalysis.DeviceDataSource
                     communicator.ReceivePackets(0, p =>
                     {
                         tcpre.AddPacket(p.Ethernet.IpV4);
+                        ReportProgress(ProgressSource.TCPReassemble,
+                                       (int) ((double)cnt / plist.Count) ,
+                                       string.Format("分析中...{0}/{1}", ++cnt, plist.Count));
                     });
                 }
             }
+
+            ReportProgress(ProgressSource.TCPReassemble, 100, "完成...打开文件夹...");
 
             // Open folder
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
@@ -133,6 +141,7 @@ namespace TrafficAnalysis.DeviceDataSource
                 throw new InvalidOperationException("No file has been loaded");
             }
 
+            ReportProgress(ProgressSource.HttpReconstruct, 0, "分析中...");
             using (TcpReassembly tcpre = new TcpReassembly())
             {
                 // Reconstruct http files
@@ -149,6 +158,7 @@ namespace TrafficAnalysis.DeviceDataSource
                     }
                 };
 
+                int cnt = 0;
                 // Read all packets from file until EOF
                 using (PacketCommunicator communicator = dev.Open())
                 {
@@ -156,13 +166,16 @@ namespace TrafficAnalysis.DeviceDataSource
                     communicator.ReceivePackets(0, p =>
                     {
                         tcpre.AddPacket(p.Ethernet.IpV4);
+                        ReportProgress(ProgressSource.HttpReconstruct,
+                                       (int) ((double) cnt / plist.Count),
+                                       string.Format("分析中...{0}/{1}", ++cnt, plist.Count));
                     });
                 }
 
                 // Close all unfinished connection
                 tcpre.Finish();
 
-                
+                ReportProgress(ProgressSource.HttpReconstruct, 100, "完成...打开文件夹...");
             }
 
             // Open folder
@@ -230,7 +243,8 @@ namespace TrafficAnalysis.DeviceDataSource
             plist.Add(new MetaPacket(packet));
 
             loadedbytes += packet.Length;
-            ReportProgress((int) (Prog_ReadFileStart + (double) loadedbytes / totalbytes * Prog_ReadFileLen),
+            ReportProgress(ProgressSource.Load,
+                            (int) (Prog_ReadFileStart + (double) loadedbytes / totalbytes * Prog_ReadFileLen),
                             "读取文件...");
 
             if (packet.Timestamp < Earliest)
@@ -351,7 +365,7 @@ namespace TrafficAnalysis.DeviceDataSource
             presum.Add(new RangeMeta(plist[0]));
             bpsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
             ppsList.Add(new KeyValuePair<TimeSpan, double>(TimeSpan.Zero, 0));
-            ReportProgress((int) (tot + each), "分析中...");
+            ReportProgress(ProgressSource.Load, (int)(tot + each), "分析中...");
 
             int delta = CalcDelta(plist.Count);
             for (int i = 1; i != plist.Count; i++)
@@ -369,7 +383,7 @@ namespace TrafficAnalysis.DeviceDataSource
                     bpsList.Add(new KeyValuePair<TimeSpan, double>(x, b));
                     ppsList.Add(new KeyValuePair<TimeSpan, double>(x, p));
                 }
-                ReportProgress((int) (tot + (i+1)*each), "分析中...");
+                ReportProgress(ProgressSource.Load, (int)(tot + (i + 1) * each), "分析中...");
             }
         }
 
@@ -403,11 +417,13 @@ namespace TrafficAnalysis.DeviceDataSource
         public event ProgressChangedEventHandler ProgressChanged;
 
         int lastreport = -1;
-        private void ReportProgress(int progress, object userstate)
+        private void ReportProgress(ProgressSource source, int progress, object userstate)
         {
             if (ProgressChanged != null && lastreport != progress)
             {
-                ProgressChanged(this, new ProgressChangedEventArgs(progress, userstate));
+                ProgressChanged(this,
+                                new ProgressChangedEventArgs(progress,
+                                                new Tuple<ProgressSource, object>(source, userstate)));
                 lastreport = progress;
             }
         }
@@ -418,6 +434,11 @@ namespace TrafficAnalysis.DeviceDataSource
         static readonly int Prog_SortPacketsLen = 10;
         static readonly int Prog_AnalyzePacketsStart = Prog_SortPacketsStart + Prog_SortPacketsLen;
         static readonly int Prog_AnalyzePacketsLen = 50;
+
+        public enum ProgressSource
+        {
+            Load, TCPReassemble, HttpReconstruct
+        }
         #endregion
     }
 

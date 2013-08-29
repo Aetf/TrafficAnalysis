@@ -118,8 +118,12 @@ namespace TrafficAnalysis.Pages
 
             worker.ProgressChanged += (o, e) =>
             {
-                ProgressValue = e.ProgressPercentage;
-                busyIndicator.BusyContent = e.UserState;
+                Tuple<FileAnalyze.ProgressSource, object> t = e.UserState as Tuple<FileAnalyze.ProgressSource, object>;
+                if (t.Item1 == FileAnalyze.ProgressSource.Load)
+                {
+                    ProgressValue = e.ProgressPercentage;
+                    busyIndicator.BusyContent = t.Item2;
+                }
             };
 
             worker.RunWorkerCompleted += (o, ea) =>
