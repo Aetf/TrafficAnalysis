@@ -14,46 +14,60 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <aut:DoubleConverter x:Key="DoubleConverter"/>
-    </UserControl.Resources>
-    <xctk:BusyIndicator x:Name="busyIndicator">
-        <xctk:BusyIndicator.ProgressBarStyle>
-            <Style TargetType="{x:Type ProgressBar}">
-                <!--
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ProgressBar}">
-                            <Grid>
-                                <xctk:Pie x:Name="Pie" Fill="#FFEFAC27"
+        <Style x:Key="PieIndicator" TargetType="{x:Type xctk:BusyIndicator}">
+            <Setter Property="ProgressBarStyle">
+                <Setter.Value>
+                    <Style TargetType="ProgressBar">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BusyContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <ProgressBar Width="200" Height="200" IsIndeterminate="False" Margin="2"
+                                     Value="{Binding ElementName=fileAnalyzePage, Path=ProgressValue}">
+                            <ProgressBar.Template>
+                                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                                    <Grid>
+                                        <xctk:Pie x:Name="Pie" Fill="#FF007ACC"
                                           HorizontalAlignment="Stretch"
-                                          Width="Auto" StrokeThickness="4"
+                                          Width="Auto" StrokeThickness="6"
                                           Slice="{TemplateBinding Value, Converter={StaticResource DoubleConverter}}"
                                           RenderTransformOrigin="0.5,0.5">
-                                    <xctk:Pie.RenderTransform>
-                                        <RotateTransform Angle="-90" />
-                                    </xctk:Pie.RenderTransform>
-                                </xctk:Pie>
-                                <Ellipse Fill="White"
+                                            <xctk:Pie.RenderTransform>
+                                                <RotateTransform Angle="-90" />
+                                            </xctk:Pie.RenderTransform>
+                                        </xctk:Pie>
+                                        <Ellipse Fill="White"
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center"
                                          Width="100" Height="100" />
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            Orientation="Horizontal">
-                                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="Black"
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Orientation="Vertical">
+                                            <TextBlock FontSize="12" FontWeight="Bold" Foreground="Black"
                                                Text="{Binding ElementName=Pie, Path=Slice, StringFormat=#%}" />
-                                </StackPanel>
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Width" Value="200" />
-                -->
-                <Setter Property="Height" Value="20" />
-                <Setter Property="IsIndeterminate" Value="False" />
-                <Setter Property="Value" Value="{Binding ElementName=fileAnalyzePage, Path=ProgressValue}" />
-                <Setter Property="Margin" Value="4" />
-            </Style>
-        </xctk:BusyIndicator.ProgressBarStyle>
-        
+                                            <TextBlock FontSize="8" FontWeight="Normal" Foreground="Black"
+                                               Text="{Binding ElementName=fileAnalyzePage, Path=ProgressString}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </ControlTemplate>
+                            </ProgressBar.Template>
+                        </ProgressBar>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Setter Property="OverlayStyle">
+                <Setter.Value>
+                    <Style TargetType="Rectangle">
+                        <Setter Property="Fill" Value="#B1636363" />
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <xctk:BusyIndicator x:Name="busyIndicator" Style="{StaticResource PieIndicator}">
             <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="5*" />

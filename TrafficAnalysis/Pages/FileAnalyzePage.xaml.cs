@@ -69,26 +69,7 @@ namespace TrafficAnalysis.Pages
 
         #region Analyze
 
-        #region ProgressValue Property
-        /// <summary>
-        /// Gets or sets progress value showing in busyindicator.
-        /// </summary>
-        public int ProgressValue
-        {
-            get { return (int)GetValue(ProgressValueProperty); }
-            set { SetValue(ProgressValueProperty, value); }
-        }
-
-        /// <summary>
-        /// Identifies ProgressValue dependency property.
-        /// </summary>
-        public static readonly DependencyProperty ProgressValueProperty =
-                            DependencyProperty.Register(
-                                            "ProgressValue",
-                                            typeof(int),
-                                            typeof(FileAnalyzePage),
-                                            new UIPropertyMetadata(0));
-        #endregion
+        
 
         /// <summary>
         /// Load file in a background thread and show a busyindicator.
@@ -122,7 +103,8 @@ namespace TrafficAnalysis.Pages
                 if (t.Item1 == FileAnalyze.ProgressSource.Load)
                 {
                     ProgressValue = e.ProgressPercentage;
-                    busyIndicator.BusyContent = t.Item2;
+                    ProgressString = (string) t.Item2;
+                    busyIndicator.BusyContent = null;
                 }
             };
 
@@ -240,7 +222,40 @@ namespace TrafficAnalysis.Pages
 
             if (res == CommonFileDialogResult.Ok)
             {
-                Fsource.TcpStreamReassemble(dlg.FileName);
+                ProgressDialog pdlg = new ProgressDialog();
+                pdlg.Owner = Application.Current.MainWindow;
+                pdlg.Works += (o, ea) =>
+                {
+                    var tuple = (Tuple<BackgroundWorker, object>) ea.Argument;
+                    BackgroundWorker worker = tuple.Item1;
+
+                    ProgressChangedEventHandler h = (sender, e) =>
+                    {
+                        worker.ReportProgress(e.ProgressPercentage, e.UserState);
+                    };
+                    Fsource.ProgressChanged += h;
+
+                    try
+                    {
+                        Fsource.TcpStreamReassemble(dlg.FileName);
+                    }
+                    finally
+                    {
+                        Fsource.ProgressChanged -= h;
+                    }
+                };
+
+                pdlg.AddProgressChangedHandler((o, e) =>
+                {
+                    Tuple<FileAnalyze.ProgressSource, object> t = e.UserState as Tuple<FileAnalyze.ProgressSource, object>;
+                    if (t.Item1 == FileAnalyze.ProgressSource.HttpReconstruct)
+                    {
+                        pdlg.ProgressValue = e.ProgressPercentage;
+                        pdlg.ProgressString = (string)t.Item2;
+                    }
+                });
+
+                pdlg.ShowDialog();
             }
         }
 
@@ -253,9 +268,88 @@ namespace TrafficAnalysis.Pages
 
             if (res == CommonFileDialogResult.Ok)
             {
-                Fsource.HttpReconstruct(dlg.FileName);
+                ProgressDialog pdlg = new ProgressDialog();
+                pdlg.Owner = Application.Current.MainWindow;
+                pdlg.Works += (o, ea) =>
+                {
+                    var tuple = (Tuple<BackgroundWorker, object>)ea.Argument;
+                    BackgroundWorker worker = tuple.Item1;
+
+                    ProgressChangedEventHandler h = (sender, e) =>
+                    {
+                        worker.ReportProgress(e.ProgressPercentage, e.UserState);
+                    };
+                    Fsource.ProgressChanged += h;
+
+                    try
+                    {
+                        Fsource.HttpReconstruct(dlg.FileName);
+                    }
+                    finally
+                    {
+                        Fsource.ProgressChanged -= h;
+                    }
+                };
+
+                pdlg.AddProgressChangedHandler((o, e) =>
+                {
+                    Tuple<FileAnalyze.ProgressSource, object> t = e.UserState as Tuple<FileAnalyze.ProgressSource, object>;
+                    if (t.Item1 == FileAnalyze.ProgressSource.HttpReconstruct)
+                    {
+                        pdlg.ProgressValue = e.ProgressPercentage;
+                        pdlg.ProgressString = (string)t.Item2;
+                    }
+                });
+
+                pdlg.ShowDialog();
             }
         }
+        #endregion
+
+        #region ProgressBar Implement
+
+        #region ProgressValue Property
+        /// <summary>
+        /// Gets or sets progress value showing in busyindicator.
+        /// </summary>
+        public int ProgressValue
+        {
+            get { return (int)GetValue(ProgressValueProperty); }
+            set { SetValue(ProgressValueProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies ProgressValue dependency property.
+        /// </summary>
+        public static readonly DependencyProperty ProgressValueProperty =
+                            DependencyProperty.Register(
+                                            "ProgressValue",
+                                            typeof(int),
+                                            typeof(FileAnalyzePage),
+                                            new UIPropertyMetadata(0));
+        #endregion
+
+        #region ProgressString Property
+        /// <summary>
+        /// Gets or sets progress string showing in busyindicator.
+        /// </summary>
+        public string ProgressString
+        {
+            get { return (string)GetValue(ProgressStringProperty); }
+            set { SetValue(ProgressStringProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies ProgressString dependency property.
+        /// </summary>
+        public static readonly DependencyProperty ProgressStringProperty =
+                            DependencyProperty.Register(
+                                            "ProgressString",
+                                            typeof(string),
+                                            typeof(FileAnalyzePage),
+                                            new UIPropertyMetadata(""));
+        #endregion
+
         #endregion
 
         #region ITabPage Members

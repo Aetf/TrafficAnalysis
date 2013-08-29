@@ -1,0 +1,12 @@
+﻿<Window x:Class="TrafficAnalysis.ProgressDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ProgressDialog" Height="200" Width="495" WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False" SizeToContent="WidthAndHeight" SnapsToDevicePixels="True"
+        WindowStyle="SingleBorderWindow" ResizeMode="NoResize">
+    <Grid>
+        <ProgressBar x:Name="progressBar" Width="350" Height="25" Margin="10"/>
+        <TextBlock x:Name="progressText" FontSize="14" Text="Loading..."
+                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+    </Grid>
+</Window>

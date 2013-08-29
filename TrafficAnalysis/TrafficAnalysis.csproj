@@ -131,6 +131,9 @@
     <Compile Include="Pages\DetialMonitorPage.xaml.cs">
       <DependentUpon>DetialMonitorPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ProgressDialog.xaml.cs">
+      <DependentUpon>ProgressDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StartNewCaptureDetial.xaml.cs">
       <DependentUpon>StartNewCaptureDetial.xaml</DependentUpon>
     </Compile>
@@ -180,6 +183,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\FileAnalyzePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ProgressDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
