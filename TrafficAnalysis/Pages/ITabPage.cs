@@ -34,5 +34,7 @@ namespace TrafficAnalysis.Pages
         /// Gets the header that label this page.
         /// </summary>
         string Header { get; }
+
+        object TypeIdentity { get; }
     }
 }

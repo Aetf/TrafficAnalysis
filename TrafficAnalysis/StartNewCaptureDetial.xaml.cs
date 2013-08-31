@@ -54,6 +54,7 @@ namespace TrafficAnalysis
 
             Options.Count = (useTotalCount.IsChecked ?? false) ? (TotalCnt.Value ?? int.MaxValue) : int.MaxValue;
             Options.Durance = (useTotalDurance.IsChecked ?? false) ? durance : TimeSpan.MaxValue;
+            Options.Path = pathBox.Text;
 
             DialogResult = true;
         }
@@ -114,7 +115,7 @@ namespace TrafficAnalysis
 
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-            var dev = LivePacketDevice.AllLocalMachine.FirstOrDefault(d => d.Name.Equals(DeviceDescription));
+            var dev = LivePacketDevice.AllLocalMachine.FirstOrDefault(d => d.Name.Equals(DeviceDescription.Name));
             var str = (string)value;
 
             try
@@ -127,7 +128,7 @@ namespace TrafficAnalysis
                     communicator.CreateFilter(str);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return new ValidationResult(false, ex.Message);
             }

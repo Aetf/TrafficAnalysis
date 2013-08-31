@@ -1,28 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Diagnostics;
-using PcapDotNet.Packets;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using PcapDotNet.Core;
+using PcapDotNet.Packets;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
-    class CaptureMod : ICaptureSource
+    class CaptureControlBlock : ICaptureDescreption
     {
-        public CaptureMod()
-        {
-            Cancellation = new CancellationTokenSource();
-
-            Options = new DumpOptions()
-            {
-                Count = int.MaxValue,
-                Durance = TimeSpan.MaxValue
-            };
-        }
-
         /// <summary>
         /// The capture task object
         /// </summary>
@@ -46,6 +36,24 @@ namespace TrafficAnalysis.DeviceDataSource
         /// otherwise it wouldn't have effect
         /// </summary>
         public DeviceDes Device { get; set; }
+
+        #region Commands
+        public RoutedCommand CancelTaskCommand { get; private set; }
+        #endregion
+
+        public CaptureControlBlock()
+        {
+            Cancellation = new CancellationTokenSource();
+            CancelTaskCommand = new RoutedCommand();
+
+            Options = new DumpOptions()
+            {
+                Count = int.MaxValue,
+                Durance = TimeSpan.MaxValue
+            };
+
+            
+        }
 
         public void StartCapture()
         {

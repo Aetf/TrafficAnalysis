@@ -370,6 +370,17 @@ namespace TrafficAnalysis.Pages
         public TabItem TItem { get; private set; }
         public MainWindow Window { get; private set; }
         public string Header { get { return "详细监控"; } }
+        public object TypeIdentity { get { return typeIdentity; } }
+        #endregion
+
+        #region Statics
+        readonly static string typeIdentity;
+
+        static DetialMonitorPage()
+        {
+            typeIdentity = "TrafficAnalysis.Pages.DetialMonitorPage";
+            MainWindow.NoClosePage.Add(typeIdentity);
+        }
         #endregion
 
     }

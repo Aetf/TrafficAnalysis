@@ -110,8 +110,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DeviceDataSource\CaptureMod.cs" />
-    <Compile Include="DeviceDataSource\ICaptureSource.cs" />
+    <Compile Include="DeviceDataSource\CaptureControlBlock.cs" />
+    <Compile Include="DeviceDataSource\ICaptureDescreption.cs" />
     <Compile Include="DeviceDataSource\ReadOnlyObservableDeviceList.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpReconstructor.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpRequest.cs" />
@@ -132,6 +132,9 @@
     <Compile Include="Pages\ITabPage.cs" />
     <Compile Include="Pages\DetialMonitorPage.xaml.cs">
       <DependentUpon>DetialMonitorPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\TaskListPage.xaml.cs">
+      <DependentUpon>TaskListPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ProgressDialog.xaml.cs">
       <DependentUpon>ProgressDialog.xaml</DependentUpon>
@@ -185,6 +188,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\FileAnalyzePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\TaskListPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

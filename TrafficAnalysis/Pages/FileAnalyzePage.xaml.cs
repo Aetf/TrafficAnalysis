@@ -379,9 +379,18 @@ namespace TrafficAnalysis.Pages
         public TabItem TItem { get; private set; }
         public MainWindow Window { get; private set; }
         public string Header { get { return System.IO.Path.GetFileName(filePath); } }
+
+        public object TypeIdentity { get { return typeIdentity; } }
         #endregion
 
         #region Static Members
+
+        static string typeIdentity;
+
+        static FileAnalyzePage()
+        {
+            typeIdentity = "TrafficAnalysis.Pages.FileAnalyzePage";
+        }
 
         // Fix bug: FileAnalyzeTabGroup contextrual ribbon tab donot appear correctly.
         static int loadCnt = 0;

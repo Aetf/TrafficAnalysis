@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Threading;
 using System.Threading;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using PcapDotNet.Packets;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
-    interface ICaptureSource
+    public interface ICaptureDescreption
     {
         /// <summary>
         /// The capture task object
@@ -20,6 +18,11 @@ namespace TrafficAnalysis.DeviceDataSource
         /// The CancellationTokenSource to cancel the task
         /// </summary>
         CancellationTokenSource Cancellation { get; }
+
+        /// <summary>
+        /// Get the command to cancel the capture task
+        /// </summary>
+        RoutedCommand CancelTaskCommand { get; }
 
         /// <summary>
         /// The options about the task.
@@ -41,6 +44,16 @@ namespace TrafficAnalysis.DeviceDataSource
         void StartCapture();
     }
 
+    public class DumpOptions
+    {
+        public string Path { get; set; }
+        public int Count { get; set; }
+        public TimeSpan Durance { get; set; }
+        public string Filter { get; set; }
+        public PacketArrivalEventHandler Callback { get; set; }
+    }
+
+    #region PacketArrivalEvent
     public class PacketArrivalEventArgs : EventArgs
     {
         public IList<Packet> Packets { get; private set; }
@@ -51,14 +64,18 @@ namespace TrafficAnalysis.DeviceDataSource
             Packets.Add(packet);
         }
     }
-
     public delegate void PacketArrivalEventHandler(object sender, PacketArrivalEventArgs args);
-    public class DumpOptions
+    #endregion
+
+    #region CaptureEvent
+    public class CaptureEventArgs : EventArgs
     {
-        public string Path;
-        public int Count;
-        public TimeSpan Durance;
-        public string Filter;
-        public PacketArrivalEventHandler Callback;
+        public ICaptureDescreption ControlBlock { get; private set; }
+        public CaptureEventArgs(ICaptureDescreption ccb)
+        {
+            ControlBlock = ccb;
+        }
     }
+    public delegate void CaptureEventHandler(object sendor, CaptureEventArgs e);
+    #endregion    
 }

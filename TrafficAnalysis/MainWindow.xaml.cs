@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace TrafficAnalysis
 
         #endregion
 
+        #region Initialize
+
         public MainWindow()
         {
             InitializeComponent();
@@ -34,8 +37,6 @@ namespace TrafficAnalysis
             BindingCommands();
         }
 
-        #region Initialize
-
         private void BindingCommands()
         {
             CommandBindings.Add(new CommandBinding(CloseDocument,
@@ -43,7 +44,7 @@ namespace TrafficAnalysis
             (o, e) =>
             {
                 ITabPage page = (ITabPage)Tabs.ItemContainerGenerator.ItemFromContainer((TabItem)e.Parameter);
-                e.CanExecute = !(page is DetialMonitorPage);
+                e.CanExecute = !NoClosePage.Contains(page.TypeIdentity);
             }
             ));
 
@@ -106,7 +107,7 @@ namespace TrafficAnalysis
 
         #endregion
 
-        #region Analyze
+        #region Display
 
         static private string[] bpsUnit = new string[]{"bps", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps"};
         internal void FormatBpsSpeed(double bps)
@@ -175,10 +176,10 @@ namespace TrafficAnalysis
         /// <param name="option"></param>
         public void StartNewCaptureTask(DeviceDes des, DumpOptions options = null)
         {
-            Microsoft.Win32.OpenFileDialog dlg = null;
+            Microsoft.Win32.SaveFileDialog dlg = null;
             if (options == null)
             {
-                dlg = new Microsoft.Win32.OpenFileDialog();
+                dlg = new Microsoft.Win32.SaveFileDialog();
                 dlg.FileName = "new_capture";
                 dlg.DefaultExt = ".pcap";
                 dlg.Filter = "Libpcap capture file (.pcap)|*.pcap";
@@ -197,14 +198,34 @@ namespace TrafficAnalysis
                 Filter = null
             };
 
-            CaptureMod cm = new CaptureMod()
+            CaptureControlBlock cm = new CaptureControlBlock()
             {
                 Device = des,
                 Options = op
             };
+
+            RaiseCaptureCreated(cm);
             cm.StartCapture();
+            RaiseCaptureStarted(cm);
+
             cm.CaptureTask.ContinueWith(
-                (o) => MessageBox.Show("Task Complete!"));
+            (res) =>
+            {
+                if (res.Exception != null)
+                {
+                    MessageBox.Show(res.Exception.Message);
+                }
+                else if (res.IsCanceled)
+                {
+                    string str = string.Format("{0}上的任务已停止!", cm.Device.FriendlyName);
+                    MessageBox.Show(str);
+                }
+                else
+                {
+                    string str = string.Format("{0}上的任务完成!", cm.Device.FriendlyName);
+                    MessageBox.Show(str);
+                }
+            });
         }
         #endregion
 
@@ -256,6 +277,8 @@ namespace TrafficAnalysis
 
             ITabPage dm = new DetialMonitorPage();
             pages.Add(dm);
+            dm = new TaskListPage();
+            pages.Add(dm);
         }
 
         private void RibbonWindow_Closed(object sender, EventArgs e)
@@ -306,6 +329,39 @@ namespace TrafficAnalysis
 
         #endregion
 
+        #region Events
+
+        #region CaptureTaskCreatedEvent
+        /// <summary>
+        /// Raised when a new capture task created.
+        /// </summary>
+        public event CaptureEventHandler CaptureTaskCreated;
+        private void RaiseCaptureCreated(ICaptureDescreption cd)
+        {
+            if (CaptureTaskCreated != null)
+            {
+                CaptureTaskCreated(this, new CaptureEventArgs(cd));
+            }
+        }
+        #endregion
+        #region CaptureTaskStartedEvent
+        /// <summary>
+        /// Raised when a new capture task started.
+        /// </summary>
+        public event CaptureEventHandler CaptureTaskStarted;
+        private void RaiseCaptureStarted(ICaptureDescreption cd)
+        {
+            if (CaptureTaskStarted != null)
+            {
+                CaptureTaskStarted(this, new CaptureEventArgs(cd));
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #region Statics
+
         #region Commands
         public static readonly RoutedCommand CloseDocument = new RoutedCommand();
         public static readonly RoutedCommand ActivateDocument = new RoutedCommand();
@@ -313,6 +369,9 @@ namespace TrafficAnalysis
         public static readonly RoutedCommand ReassembleTCP = new RoutedCommand();
         public static readonly RoutedCommand CreateNewCapture = new RoutedCommand();
         public static readonly RoutedCommand ReconstructHTTP = new RoutedCommand();
+        #endregion
+
+        public static readonly HashSet<object> NoClosePage = new HashSet<object>();
         #endregion
     }
 }

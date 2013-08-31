@@ -52,7 +52,8 @@
         </GroupBox>
         <GroupBox Grid.Row="2" Header="目标文件" Margin="5">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBox Name="pathBox" Width="218" Text="{Binding ElementName=startNewCaptureDetial, Path=Options.Path}"/>
+                <TextBox Name="pathBox" Width="218"
+                         Text="{Binding ElementName=startNewCaptureDetial, Path=Options.Path, Mode=OneWayToSource}"/>
                 <Button Name="browseBtn" Content="浏览..." Margin="5 0 0 0" Click="browseBtn_Click"/>
             </StackPanel>
         </GroupBox>
