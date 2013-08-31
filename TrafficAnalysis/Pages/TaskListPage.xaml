@@ -9,8 +9,8 @@
         <ListView Name="lvCTasks">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="#"></GridViewColumn>
-                    <GridViewColumn Header="接口" DisplayMemberBinding="{Binding Device.FriendlyName}"></GridViewColumn>
+                    <GridViewColumn Header="接口" DisplayMemberBinding="{Binding Device.FriendlyName}" />
+                    <GridViewColumn Header="路径" DisplayMemberBinding="{Binding Options.Path}" />
                     <GridViewColumn Header="操作">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>

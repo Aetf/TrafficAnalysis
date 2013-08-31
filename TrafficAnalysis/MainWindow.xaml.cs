@@ -217,12 +217,12 @@ namespace TrafficAnalysis
                 }
                 else if (res.IsCanceled)
                 {
-                    string str = string.Format("{0}上的任务已停止!", cm.Device.FriendlyName);
+                    string str = string.Format("{0} 上的捕获任务已停止!", cm.Device.FriendlyName);
                     MessageBox.Show(str);
                 }
                 else
                 {
-                    string str = string.Format("{0}上的任务完成!", cm.Device.FriendlyName);
+                    string str = string.Format("{0} 上的捕获任务完成!", cm.Device.FriendlyName);
                     MessageBox.Show(str);
                 }
             });
