@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,42 +22,40 @@ namespace TrafficAnalysis
     /// </summary>
     public partial class StartNewCaptureDetial : Window
     {
-        DeviceDes des;
-
         public StartNewCaptureDetial(DeviceDes des)
         {
             this.des = des;
+            Options = new DumpOptions();
+
             InitializeComponent();
+
+            filterBinding.ValidationRules.Add(new BerkeleyPacketFilterValidationRule()
+            {
+                DeviceDescription = des
+            });
         }
+
+        DeviceDes des;
 
         public DumpOptions Options { get; private set; }
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
+            if (!IsValid(this))
+                return;
 
             TimeSpan durance = TimeSpan.MaxValue;
             if (TotalDurance.Value.HasValue)
             {
-                DateTime d = (DateTime) TotalDurance.Value;
+                DateTime d = (DateTime)TotalDurance.Value;
                 DateTime d2 = new DateTime(d.Year, d.Month, d.Day);
                 durance = d - d2;
             }
 
-            Options = new DumpOptions()
-            {
-                Path = pathBox.Text,
-                Count = (useTotalCount.IsChecked ?? false) ? (TotalCnt.Value ?? int.MaxValue) : int.MaxValue,
-                Durance = (useTotalDurance.IsChecked ?? false) ? durance : TimeSpan.MaxValue,
+            Options.Count = (useTotalCount.IsChecked ?? false) ? (TotalCnt.Value ?? int.MaxValue) : int.MaxValue;
+            Options.Durance = (useTotalDurance.IsChecked ?? false) ? durance : TimeSpan.MaxValue;
 
-            };
-
-            Close();
-        }
-
-        private void Cancel_Click(object sender, RoutedEventArgs e)
-        {
-
+            DialogResult = true;
         }
 
         private void browseBtn_Click(object sender, RoutedEventArgs e)
@@ -73,5 +72,68 @@ namespace TrafficAnalysis
                 pathBox.Text = dlg.FileName;
             }
         }
+
+        // Validate all dependency objects in a window 
+        private bool IsValid(DependencyObject node)
+        {
+            // Check if dependency object was passed 
+            if (node != null)
+            {
+                // Check if dependency object is valid. 
+                // NOTE: Validation.GetHasError works for controls that have validation rules attached  
+                bool isValid = !Validation.GetHasError(node);
+                if (!isValid)
+                {
+                    // If the dependency object is invalid, and it can receive the focus, 
+                    // set the focus 
+                    if (node is IInputElement) Keyboard.Focus((IInputElement)node);
+                    return false;
+                }
+            }
+
+            // If this dependency object is valid, check all child dependency objects 
+            foreach (object subnode in LogicalTreeHelper.GetChildren(node))
+            {
+                if (subnode is DependencyObject)
+                {
+                    // If a child dependency object is invalid, return false immediately, 
+                    // otherwise keep checking 
+                    if (IsValid((DependencyObject)subnode) == false) return false;
+                }
+            }
+
+            // All dependency objects are valid 
+            return true;
+        }
+
+    }
+
+    public class BerkeleyPacketFilterValidationRule : ValidationRule
+    {
+        public DeviceDes DeviceDescription { get; set; }
+
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            var dev = LivePacketDevice.AllLocalMachine.FirstOrDefault(d => d.Name.Equals(DeviceDescription));
+            var str = (string)value;
+
+            try
+            {
+                using (PacketCommunicator communicator = dev.Open(
+                    65535, PacketDeviceOpenAttributes.Promiscuous,
+                    250
+                    ))
+                {
+                    communicator.CreateFilter(str);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                return new ValidationResult(false, ex.Message);
+            }
+            
+            return new ValidationResult(true, null);
+        }
+
     }
 }

@@ -53,7 +53,7 @@ namespace TrafficAnalysis.DeviceDataSource
     }
 
     public delegate void PacketArrivalEventHandler(object sender, PacketArrivalEventArgs args);
-    public struct DumpOptions
+    public class DumpOptions
     {
         public string Path;
         public int Count;

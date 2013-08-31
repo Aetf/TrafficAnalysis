@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:xc="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+        xmlns:a="clr-namespace:TrafficAnalysis"
         Title="StartNewCaptureDetial" Height="265" Width="300"
-        ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        x:Name="startNewCaptureDetial">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -40,11 +42,17 @@
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="过滤器" Margin="5">
-            <TextBox Margin="5"></TextBox>
+            <TextBox x:Name="filterbox" Margin="5">
+                <TextBox.Text>
+                    <Binding x:Name="filterBinding" Path="Options.Filter" ElementName="startNewCaptureDetial" 
+                             UpdateSourceTrigger="LostFocus">
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </GroupBox>
         <GroupBox Grid.Row="2" Header="目标文件" Margin="5">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBox Name="pathBox" Width="218"/>
+                <TextBox Name="pathBox" Width="218" Text="{Binding ElementName=startNewCaptureDetial, Path=Options.Path}"/>
                 <Button Name="browseBtn" Content="浏览..." Margin="5 0 0 0" Click="browseBtn_Click"/>
             </StackPanel>
         </GroupBox>
@@ -52,7 +60,7 @@
             <Button Margin="10 0 10 0" Padding="5 1"
                     Content="开始" IsDefault="True" Click="Ok_Click"/>
             <Button Margin="10 0 10 0" Padding="5 1"
-                    Content="取消" IsCancel="True" Click="Cancel_Click"/>
+                    Content="取消" IsCancel="True"/>
         </StackPanel>
     </Grid>
 </Window>

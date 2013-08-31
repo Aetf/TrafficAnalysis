@@ -173,7 +173,7 @@ namespace TrafficAnalysis
         /// </summary>
         /// <param name="des"></param>
         /// <param name="option"></param>
-        public void StartNewCaptureTask(DeviceDes des, DumpOptions? options = null)
+        public void StartNewCaptureTask(DeviceDes des, DumpOptions options = null)
         {
             Microsoft.Win32.OpenFileDialog dlg = null;
             if (options == null)
