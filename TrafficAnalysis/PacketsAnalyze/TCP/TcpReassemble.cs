@@ -11,7 +11,7 @@ using PcapDotNet.Packets.Transport;
 
 namespace TrafficAnalysis.PacketsAnalyze.TCP
 {
-    public class TcpReassembly : IDisposable
+    public class TcpReassemble : IDisposable
     {
         #region Connection Pool
         private Dictionary<TcpPair, TcpConnection> connPool = new Dictionary<TcpPair, TcpConnection>();
@@ -43,7 +43,7 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         /// Ctor
         /// </summary>
         /// <param name="saveDir">The directory to save stream files</param>
-        public TcpReassembly()
+        public TcpReassemble()
         {
             TcpConnection.SetNextID(0);
         }

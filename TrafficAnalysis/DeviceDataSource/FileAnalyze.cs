@@ -101,7 +101,7 @@ namespace TrafficAnalysis.DeviceDataSource
 
 
             ReportProgress(ProgressSource.TCPReassemble, 0, "分析中...");
-            using (TcpReassembly tcpre = new TcpReassembly())
+            using (TcpReassemble tcpre = new TcpReassemble())
             {
                 // Save complete connections to files
                 ConnectionToFile ctf = new ConnectionToFile(saveDir);
@@ -142,7 +142,7 @@ namespace TrafficAnalysis.DeviceDataSource
             }
 
             ReportProgress(ProgressSource.HttpReconstruct, 0, "分析中...");
-            using (TcpReassembly tcpre = new TcpReassembly())
+            using (TcpReassemble tcpre = new TcpReassemble())
             {
                 // Reconstruct http files
                 HttpReconstructor httpRecon = new HttpReconstructor();

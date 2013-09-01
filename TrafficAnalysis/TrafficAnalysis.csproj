@@ -125,7 +125,7 @@
     <Compile Include="PacketsAnalyze\TCP\TcpControlBlock.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpStructs.cs" />
     <Compile Include="PacketsAnalyze\TCP\TcpStream.cs" />
-    <Compile Include="PacketsAnalyze\TCP\TcpReassembly.cs" />
+    <Compile Include="PacketsAnalyze\TCP\TcpReassemble.cs" />
     <Compile Include="Pages\FileAnalyzePage.xaml.cs">
       <DependentUpon>FileAnalyzePage.xaml</DependentUpon>
     </Compile>
