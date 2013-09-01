@@ -46,6 +46,7 @@ namespace TrafficAnalysis.Pages
         private void InitGraph()
         {
             TimeLine.Children.Remove(TimeLine.MouseNavigation);
+            TimeLine.Children.Remove(TimeLine.DefaultContextMenu);
             var axis = TimeLine.MainHorizontalAxis as HorizontalTimeSpanAxis;
             Func<double, string> mapping = val => axis.ConvertFromDouble(val).ToString(@"hh\:mm\:ss\.fff");
             LineMin.XTextMapping = mapping;
