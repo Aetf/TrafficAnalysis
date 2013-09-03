@@ -172,9 +172,6 @@ namespace TrafficAnalysis.DeviceDataSource
                     });
                 }
 
-                // Close all unfinished connection
-                tcpre.Finish();
-
                 ReportProgress(ProgressSource.HttpReconstruct, 100, "完成...打开文件夹...");
             }
 

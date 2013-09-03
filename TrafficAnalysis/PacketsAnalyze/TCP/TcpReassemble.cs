@@ -32,7 +32,14 @@ namespace TrafficAnalysis.PacketsAnalyze.TCP
         {
             connPool.Remove(conn.Pair);
 
-            RaiseConnectionFinished(conn);
+            try
+            {
+                RaiseConnectionFinished(conn);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception catched: {0}", ex.Message);
+            }
 
             for (int i = 0; i != 2; i++)
                 conn.Stream(i).Data.Dispose();

@@ -25,13 +25,13 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
         public void OnConnectionFinished(TcpConnection conn)
         {
+            RequestList.Clear();
+            ResponseList.Clear();
+
             // We only want http stream
             if (conn.Pair.APort != HttpStatics.Httpd_Port
                 && conn.Pair.BPort != HttpStatics.Httpd_Port)
                 return;
-
-            RequestList.Clear();
-            ResponseList.Clear();
 
             // Find client direction
             int reqDir = conn.Pair.APort == HttpStatics.Httpd_Port ? 1 : 0;
@@ -172,7 +172,8 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         state = ReqStateType.ReqStateStartMethod;
 
                         // Fill in other infos.
-                        req.SentSource = conn.Pair.EndPoint(direction);
+                        req.Source = conn.Pair.EndPoint(direction);
+                        req.Destination = conn.Pair.EndPoint(1 - direction);
                         req.ConnectionID = conn.ConnectionID;
                         RequestList.Add(req);
                     }
@@ -314,6 +315,17 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         // Found end of header
                         cur += 4;
 
+                        // We are sure to have found a response now,
+                        // so match it to a request.
+                        // Should always match in a complete connection,
+                        // however, there are rare circumstences when responses
+                        // are more than requests.
+                        if (reqIdx < RequestList.Count)
+                        {
+                            rpy.Request = RequestList[reqIdx];
+                            RequestList[reqIdx++].Response = rpy;
+                        }
+
                         // At this point, we need to find the end of the
                         // response body.  There's a variety of ways to
                         // do this, but in any case, we need to make sure
@@ -324,7 +336,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         // for the reply to HEAD
                         // for a 1xx
                         // for a 204 (no content), 205 (reset content), or 304 (not modified).
-                        if (RequestList[reqIdx].Method == HttpMethod.Head
+                        if ((rpy.Request != null && rpy.Request.Method == HttpMethod.Head)
                             || rpy.ResponseCode < 200
                             || rpy.ResponseCode == 204
                             || rpy.ResponseCode == 205
@@ -433,16 +445,11 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                         state = RpyStateType.RpyStateStartHttp;
 
                         // Fill in other infos
-                        rpy.SentSource = conn.Pair.EndPoint(direction);
+                        rpy.Source = conn.Pair.EndPoint(direction);
+                        rpy.Destination = conn.Pair.EndPoint(1 - direction);
                         rpy.ConnectionID = conn.ConnectionID;
                         // Add reply to list
                         ResponseList.Add(rpy);
-                        // Should always match in a complete connection
-                        if (reqIdx < RequestList.Count)
-                        {
-                            rpy.Request = RequestList[reqIdx];
-                            RequestList[reqIdx++].Response = rpy;
-                        }
                     }
                     else
                     {

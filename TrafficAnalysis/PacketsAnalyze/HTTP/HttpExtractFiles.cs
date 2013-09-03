@@ -121,8 +121,8 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             DirectoryInfo gpwd = Directory.CreateDirectory(workFolder);
 
             // Create a folder for all files between these two ip
-            string aip = rpy.Request.SentSource.Address.ToString().Replace(':', ' ');
-            string bip = rpy.SentSource.Address.ToString().Replace(':', ' ');
+            string aip = rpy.Destination.Address.ToString().Replace(':', ' ');
+            string bip = rpy.Source.Address.ToString().Replace(':', ' ');
             DirectoryInfo pwd = gpwd.CreateSubdirectory(string.Format("From[{0}] To[{1}]", aip, bip));
 
             // Decide the file name.

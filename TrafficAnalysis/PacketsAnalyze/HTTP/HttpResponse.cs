@@ -98,13 +98,22 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
 
         public Byte[] Body { get; set; }
 
+        /// <summary>
+        /// Matching request. Be careful, this could be null
+        /// in case no matching request found.
+        /// </summary>
         public HttpRequest Request { get; set; }
 
         #region Some information about the connection
         /// <summary>
         /// Who sent it
         /// </summary>
-        public IPEndPoint SentSource { get; set; }
+        public IPEndPoint Source { get; set; }
+
+        /// <summary>
+        /// Who it was sent to
+        /// </summary>
+        public IPEndPoint Destination { get; set; }
 
         public UInt64 ConnectionID { get; set; }
         #endregion

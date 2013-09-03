@@ -87,7 +87,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         public Byte[] Body { get; set; }
 
         /// <summary>
-        /// Matching response
+        /// Matching response, this could be null
         /// </summary>
         public HttpResponse Response { get; set; }
 
@@ -95,7 +95,12 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         /// <summary>
         /// Who sent it
         /// </summary>
-        public IPEndPoint SentSource { get; set; }
+        public IPEndPoint Source { get; set; }
+
+        /// <summary>
+        /// Who it was sent to
+        /// </summary>
+        public IPEndPoint Destination { get; set; }
 
         public UInt64 ConnectionID { get; set; }
         #endregion
