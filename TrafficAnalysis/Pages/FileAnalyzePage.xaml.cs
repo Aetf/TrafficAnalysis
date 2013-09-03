@@ -305,6 +305,54 @@ namespace TrafficAnalysis.Pages
                 pdlg.ShowDialog();
             }
         }
+
+        public void ReconstructKeywordHTTP()
+        {
+            string keyword = "abc";
+
+            var dlg = new CommonOpenFileDialog();
+            dlg.IsFolderPicker = true;
+
+            var res = dlg.ShowDialog();
+
+            if (res == CommonFileDialogResult.Ok)
+            {
+                ProgressDialog pdlg = new ProgressDialog();
+                pdlg.Owner = Application.Current.MainWindow;
+                pdlg.Works += (o, ea) =>
+                {
+                    var tuple = (Tuple<BackgroundWorker, object>)ea.Argument;
+                    BackgroundWorker worker = tuple.Item1;
+
+                    ProgressChangedEventHandler h = (sender, e) =>
+                    {
+                        worker.ReportProgress(e.ProgressPercentage, e.UserState);
+                    };
+                    Fsource.ProgressChanged += h;
+
+                    try
+                    {
+                        Fsource.HttpReconstruct(dlg.FileName);
+                    }
+                    finally
+                    {
+                        Fsource.ProgressChanged -= h;
+                    }
+                };
+
+                pdlg.AddProgressChangedHandler((o, e) =>
+                {
+                    Tuple<FileAnalyze.ProgressSource, object> t = e.UserState as Tuple<FileAnalyze.ProgressSource, object>;
+                    if (t.Item1 == FileAnalyze.ProgressSource.HttpReconstruct)
+                    {
+                        pdlg.ProgressValue = e.ProgressPercentage;
+                        pdlg.ProgressString = (string)t.Item2;
+                    }
+                });
+
+                pdlg.ShowDialog();
+            }
+        }
         #endregion
 
         #region ProgressBar Implement

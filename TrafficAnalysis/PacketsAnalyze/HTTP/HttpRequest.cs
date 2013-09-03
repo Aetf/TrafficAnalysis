@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TrafficAnalysis.PacketsAnalyze.HTTP
 {
-    class HttpRequest
+    public class HttpRequest
     {
 
         #region Headers

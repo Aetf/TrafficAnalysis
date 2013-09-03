@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.IO.Compression;
 using System.Net.Mime;
+using System.IO.Compression;
 using System.Threading.Tasks;
 
 namespace TrafficAnalysis.PacketsAnalyze.HTTP
 {
-    class HttpExtractFiles
+    public class HttpConstrainExtract
     {
         #region public string WorkFolder
         private string workFolder;
@@ -39,9 +40,12 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
         }
         #endregion
 
-        public HttpExtractFiles(string saveDir)
+        public Collection<ExtractConstrain> ConstrainCollection { get; set; }
+
+        public HttpConstrainExtract(string saveDir)
         {
             WorkFolder = saveDir;
+            ConstrainCollection = new Collection<ExtractConstrain>();
         }
 
         private void FormatBody(HttpResponse rpy)
@@ -114,6 +118,13 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             if (rpy.Body == null || rpy.Body.Length == 0)
             {
                 return;
+            }
+
+            // Apply constrains
+            foreach (ExtractConstrain cons in ConstrainCollection)
+            {
+                if (!cons.Apply(rpy))
+                    return;
             }
 
             FormatBody(rpy);
@@ -194,6 +205,14 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             string aip = rpy.Destination.Address.ToString().Replace(':', ' ');
             string bip = rpy.Source.Address.ToString().Replace(':', ' ');
             return string.Format("From[{0}] To[{1}]", aip, bip);
+        }
+    }
+
+    public class ExtractConstrain
+    {
+        virtual public bool Apply(HttpResponse rpy)
+        {
+            return true;
         }
     }
 }

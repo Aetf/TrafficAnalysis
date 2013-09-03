@@ -83,6 +83,17 @@ namespace TrafficAnalysis
             },
             (o, e) => e.CanExecute = Tabs.SelectedContent is FileAnalyzePage));
 
+            CommandBindings.Add(new CommandBinding(MainWindow.ReconstructKeywordHttp,
+            (o, e) =>
+            {
+                if (Tabs.SelectedContent is FileAnalyzePage)
+                {
+                    FileAnalyzePage page = Tabs.SelectedContent as FileAnalyzePage;
+                    page.ReconstructKeywordHTTP();
+                }
+            },
+            (o, e) => e.CanExecute = Tabs.SelectedContent is FileAnalyzePage));
+
             CommandBindings.Add(new CommandBinding(MainWindow.CreateNewCapture,
             (o, e) =>
             {
@@ -369,6 +380,7 @@ namespace TrafficAnalysis
         public static readonly RoutedCommand ReassembleTCP = new RoutedCommand();
         public static readonly RoutedCommand CreateNewCapture = new RoutedCommand();
         public static readonly RoutedCommand ReconstructHTTP = new RoutedCommand();
+        public static readonly RoutedCommand ReconstructKeywordHttp = new RoutedCommand();
         #endregion
 
         public static readonly HashSet<object> NoClosePage = new HashSet<object>();

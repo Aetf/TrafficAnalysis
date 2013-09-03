@@ -113,11 +113,11 @@
     <Compile Include="DeviceDataSource\CaptureControlBlock.cs" />
     <Compile Include="DeviceDataSource\ICaptureDescreption.cs" />
     <Compile Include="DeviceDataSource\ReadOnlyObservableDeviceList.cs" />
+    <Compile Include="PacketsAnalyze\HTTP\HttpConstrainExtract.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpReconstructor.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpRequest.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpResponse.cs" />
     <Compile Include="PacketsAnalyze\HTTP\HttpStatics.cs" />
-    <Compile Include="PacketsAnalyze\HTTP\HttpExtractFiles.cs" />
     <Compile Include="PacketsAnalyze\HTTP\Parses.cs" />
     <Compile Include="PacketsAnalyze\MimeTypes.cs" />
     <Compile Include="PacketsAnalyze\TCP\ConnectionToFile.cs" />

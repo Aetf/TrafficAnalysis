@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using PcapDotNet.Core;
 using PcapDotNet.Packets;
 using TrafficAnalysis.PacketsAnalyze;
-using TrafficAnalysis.PacketsAnalyze.TCP;
-using System.ComponentModel;
 using TrafficAnalysis.PacketsAnalyze.HTTP;
+using TrafficAnalysis.PacketsAnalyze.TCP;
 
 namespace TrafficAnalysis.DeviceDataSource
 {
@@ -136,52 +137,13 @@ namespace TrafficAnalysis.DeviceDataSource
         // Long time operation
         public void HttpReconstruct(string saveDir)
         {
-            if (!fileLoaded)
-            {
-                throw new InvalidOperationException("No file has been loaded");
-            }
+            HttpRecon(saveDir, null);
+        }
 
-            ReportProgress(ProgressSource.HttpReconstruct, 0, "分析中...");
-            using (TcpReassemble tcpre = new TcpReassemble())
-            {
-                // Reconstruct http files
-                HttpReconstructor httpRecon = new HttpReconstructor();
-                // Save result to files
-                HttpExtractFiles htf = new HttpExtractFiles(saveDir);
-
-                tcpre.ConnectionFinished += (o, e) =>
-                {
-                    httpRecon.OnConnectionFinished(e.Connection);
-                    foreach (var rpy in httpRecon.ResponseList)
-                    {
-                        htf.OutputContent(rpy);
-                    }
-                };
-
-                int cnt = 0;
-                // Read all packets from file until EOF
-                using (PacketCommunicator communicator = dev.Open())
-                {
-                    communicator.SetFilter("tcp");
-                    communicator.ReceivePackets(0, p =>
-                    {
-                        tcpre.AddPacket(p.Ethernet.IpV4);
-                        ReportProgress(ProgressSource.HttpReconstruct,
-                                       (int) ((double) cnt / plist.Count),
-                                       string.Format("分析中...{0}/{1}", ++cnt, plist.Count));
-                    });
-                }
-
-                ReportProgress(ProgressSource.HttpReconstruct, 100, "完成...打开文件夹...");
-            }
-
-            // Open folder
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-            {
-                UseShellExecute = true,
-                FileName = saveDir,
-                Verb = "open"
-            });
+        // Long time operation
+        public void KeywordHttpReconstruct(string saveDir, IList<string> keywords)
+        {
+            HttpRecon(saveDir, null);
         }
 
         public RangeStatisticsInfo Query(TimeSpan start, TimeSpan end)
@@ -235,6 +197,57 @@ namespace TrafficAnalysis.DeviceDataSource
         }
         #endregion
 
+        #region Inner Implement
+        private void HttpRecon(string saveDir, Collection<ExtractConstrain> coll)
+        {
+            if (!fileLoaded)
+            {
+                throw new InvalidOperationException("No file has been loaded");
+            }
+
+            ReportProgress(ProgressSource.HttpReconstruct, 0, "分析中...");
+            using (TcpReassemble tcpre = new TcpReassemble())
+            {
+                // Reconstruct http files
+                HttpReconstructor httpRecon = new HttpReconstructor();
+                // Save result to files
+                HttpConstrainExtract htf = new HttpConstrainExtract(saveDir);
+
+                tcpre.ConnectionFinished += (o, e) =>
+                {
+                    httpRecon.OnConnectionFinished(e.Connection);
+                    foreach (var rpy in httpRecon.ResponseList)
+                    {
+                        htf.OutputContent(rpy);
+                    }
+                };
+
+                int cnt = 0;
+                // Read all packets from file until EOF
+                using (PacketCommunicator communicator = dev.Open())
+                {
+                    communicator.SetFilter("tcp");
+                    communicator.ReceivePackets(0, p =>
+                    {
+                        tcpre.AddPacket(p.Ethernet.IpV4);
+                        ReportProgress(ProgressSource.HttpReconstruct,
+                                       (int)((double)cnt / plist.Count),
+                                       string.Format("分析中...{0}/{1}", ++cnt, plist.Count));
+                    });
+                }
+
+                ReportProgress(ProgressSource.HttpReconstruct, 100, "完成...打开文件夹...");
+            }
+
+            // Open folder
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+            {
+                UseShellExecute = true,
+                FileName = saveDir,
+                Verb = "open"
+            });
+        }
+
         private void OnPacketArrival(Packet packet)
         {
             plist.Add(new MetaPacket(packet));
@@ -250,6 +263,7 @@ namespace TrafficAnalysis.DeviceDataSource
             if (packet.Timestamp > Latest)
                 Latest = packet.Timestamp;
         }
+        #endregion
 
         #region Statistics Analyze
 
@@ -414,7 +428,7 @@ namespace TrafficAnalysis.DeviceDataSource
         public event ProgressChangedEventHandler ProgressChanged;
 
         int lastreport = -1;
-        private void ReportProgress(ProgressSource source, int progress, object userstate)
+        internal void ReportProgress(ProgressSource source, int progress, object userstate)
         {
             if (ProgressChanged != null && lastreport != progress)
             {

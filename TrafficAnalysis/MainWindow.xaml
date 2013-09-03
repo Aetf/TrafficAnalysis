@@ -108,8 +108,12 @@
                 <RibbonGroup Header="Tcp">
                     <RibbonButton Label="重组TCP流" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
                                   Command="{x:Static a:MainWindow.ReassembleTCP}"/>
+                </RibbonGroup>
+                <RibbonGroup Header="HTTP">
                     <RibbonButton Label="还原HTTP文件" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
                                   Command="{x:Static a:MainWindow.ReconstructHTTP}"/>
+                    <RibbonButton Label="关键字还原" LargeImageSource="images/degrag32.png" SmallImageSource="images/degrag16.png"
+                                  Command="{x:Static a:MainWindow.ReconstructKeywordHttp}"/>
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>

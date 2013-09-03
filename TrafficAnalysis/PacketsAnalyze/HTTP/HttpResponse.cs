@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TrafficAnalysis.PacketsAnalyze.HTTP
 {
-    class HttpResponse
+    public class HttpResponse
     {
         public HttpResponse()
         {

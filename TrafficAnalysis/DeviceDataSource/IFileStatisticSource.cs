@@ -52,6 +52,14 @@ namespace TrafficAnalysis.DeviceDataSource
         void HttpReconstruct(string saveDir);
 
         /// <summary>
+        /// Reconstrcut files transfered by http in the flux file.
+        /// Only files contain keywords will be reconstrcuted.
+        /// </summary>
+        /// <param name="saveDir"></param>
+        /// <param name="keywords"></param>
+        void KeywordHttpReconstruct(string saveDir, IList<string> keywords);
+
+        /// <summary>
         /// Reset to load a new file.
         /// </summary>
         void Reset();
