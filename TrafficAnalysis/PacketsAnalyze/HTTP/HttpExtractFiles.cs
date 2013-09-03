@@ -119,13 +119,30 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             FormatBody(rpy);
 
             DirectoryInfo gpwd = Directory.CreateDirectory(workFolder);
-
-            // Create a folder for all files between these two ip
-            string aip = rpy.Destination.Address.ToString().Replace(':', ' ');
-            string bip = rpy.Source.Address.ToString().Replace(':', ' ');
-            DirectoryInfo pwd = gpwd.CreateSubdirectory(string.Format("From[{0}] To[{1}]", aip, bip));
+            DirectoryInfo pwd = gpwd.CreateSubdirectory(SelectFolder(rpy));
 
             // Decide the file name.
+            string name = SelectName(rpy);
+
+            // If file exists, append a number
+            string destfile = Path.Combine(pwd.FullName, name);
+            int num = 1;
+            while (File.Exists(destfile))
+            {
+                string n = Path.GetFileNameWithoutExtension(name);
+                string e = Path.GetExtension(name);
+                destfile = Path.Combine(pwd.FullName, string.Format("{0}_{1}{2}", n, num, e));
+                num++;
+            }
+
+            using (FileStream fs = File.Create(destfile))
+            {
+                fs.Write(rpy.Body, 0, rpy.Body.Length);
+            }
+        }
+
+        private string SelectName(HttpResponse rpy)
+        {
             ContentType type = new ContentType(rpy.ContentType);
 
             // Try from mime first.
@@ -146,40 +163,37 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                     else
                     {
                         int s = str.LastIndexOf('/', qpos);
-                        name = str.Substring(s+1, qpos - s - 1);
-                    }
-
-                    // in order to recogonize more html
-                    string ext = MimeTypes.GetExt(type.MediaType);
-                    if (!name.EndsWith(ext))
-                    {
-                        name += ext;
+                        name = str.Substring(s + 1, qpos - s - 1);
                     }
                 }
             }
 
-            // Generate a name
+            // Generate a name if all previous atempts failed
             if (string.IsNullOrWhiteSpace(name))
             {
-                string ext = MimeTypes.GetExt(type.MediaType);
-                name = rpy.ConnectionID.ToString() + ext;
+                name = rpy.ConnectionID.ToString() + MimeTypes.GetExt(type.MediaType);
             }
 
-            // If file exists, append a number
-            string destfile = Path.Combine(pwd.FullName, name);
-            int num = 1;
-            while (File.Exists(destfile))
+            // Try to recognize more file type using mime
+            string ext = MimeTypes.GetExt(type.MediaType);
+            if (!name.EndsWith(ext))
             {
-                string n = Path.GetFileNameWithoutExtension(name);
-                string e = Path.GetExtension(name);
-                destfile = Path.Combine(pwd.FullName, string.Format("{0}_{1}{2}", n, num, e));
-                num++;
+                name += ext;
             }
 
-            using (FileStream fs = File.Create(destfile))
-            {
-                fs.Write(rpy.Body, 0, rpy.Body.Length);
-            }
+            return name;
+        }
+
+        /// <summary>
+        /// Create a folder for all files between these two ip
+        /// </summary>
+        /// <param name="rpy"></param>
+        /// <returns></returns>
+        private string SelectFolder(HttpResponse rpy)
+        {
+            string aip = rpy.Destination.Address.ToString().Replace(':', ' ');
+            string bip = rpy.Source.Address.ToString().Replace(':', ' ');
+            return string.Format("From[{0}] To[{1}]", aip, bip);
         }
     }
 }
