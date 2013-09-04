@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using TrafficAnalysis.Util;
+using System.Text.RegularExpressions;
 
 namespace TrafficAnalysis.PacketsAnalyze.HTTP.Constrains
 {
@@ -30,7 +31,7 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP.Constrains
             return true;
         }
 
-        public string DetectCharSet(HttpResponse rpy)
+        string DetectCharSet(HttpResponse rpy)
         {
             string charset = null;
             
@@ -39,6 +40,24 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP.Constrains
             charset = type.CharSet;
 
             // then from html meta
+            if (string.IsNullOrEmpty(charset))
+            {
+                Byte[] headend = Encoding.ASCII.GetBytes("</head>");
+                Byte[] headendU = Encoding.ASCII.GetBytes("</HEAD>");
+
+                int pos = rpy.Body.BMIndexOf(headend);
+                if (pos == -1)
+                    pos = rpy.Body.BMIndexOf(headendU);
+
+                if (pos != -1)
+                {
+                    string header = Encoding.ASCII.GetString(rpy.Body, 0, pos + 1);
+                    Regex r = new Regex(@"<meta\s[^>]*?charset=['""]?([^>]*?)['""][^>]*?/?>", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    charset = r.Match(header).Groups[1].Value;
+                }
+            }
+
+            // fallback
             if (string.IsNullOrEmpty(charset))
             {
                 charset = "utf-8";
