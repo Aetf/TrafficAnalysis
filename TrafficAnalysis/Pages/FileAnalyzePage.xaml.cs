@@ -309,6 +309,7 @@ namespace TrafficAnalysis.Pages
         public void ReconstructKeywordHTTP()
         {
             HTTPReconOptionDialog reconDlg = new HTTPReconOptionDialog();
+            reconDlg.Owner = App.Current.MainWindow;
             if (reconDlg.ShowDialog() != true)
             {
                 return;
