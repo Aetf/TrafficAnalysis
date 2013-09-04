@@ -51,8 +51,11 @@ namespace TrafficAnalysis
             CommandBindings.Add(new CommandBinding(ActivateDocument,
             (o, e) =>
             {
-                Tabs.SelectedItem = e.Parameter;
-                UI.OverflowTabHeaderObserver.EnsureActiveTabVisible(Tabs);
+                if (e.Parameter != null)
+                {
+                    Tabs.SelectedItem = e.Parameter;
+                    UI.OverflowTabHeaderObserver.EnsureActiveTabVisible(Tabs);
+                }
             }));
 
             CommandBindings.Add(new CommandBinding(NewFluxAnalyze,
@@ -112,6 +115,7 @@ namespace TrafficAnalysis
                 {
                     StartNewCaptureTask(des);
                 }
+
             },
             (o, e) => e.CanExecute = DeviceCombo.SelectedItem != null));
         }
@@ -218,6 +222,8 @@ namespace TrafficAnalysis
             RaiseCaptureCreated(cm);
             cm.StartCapture();
             RaiseCaptureStarted(cm);
+
+            ActivateDocument.Execute(pages.OfType<TaskListPage>().FirstOrDefault(), this);
 
             cm.CaptureTask.ContinueWith(
             (res) =>
