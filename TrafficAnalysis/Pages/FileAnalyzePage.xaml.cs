@@ -308,7 +308,12 @@ namespace TrafficAnalysis.Pages
 
         public void ReconstructKeywordHTTP()
         {
-            string keyword = "abc";
+            HTTPReconOptionDialog reconDlg = new HTTPReconOptionDialog();
+            if (reconDlg.ShowDialog() != true)
+            {
+                return;
+            }
+            List<string> keywords = reconDlg.Keywords.ToList();
 
             var dlg = new CommonOpenFileDialog();
             dlg.IsFolderPicker = true;
@@ -332,7 +337,7 @@ namespace TrafficAnalysis.Pages
 
                     try
                     {
-                        Fsource.HttpReconstruct(dlg.FileName);
+                        Fsource.KeywordHttpReconstruct(dlg.FileName, keywords);
                     }
                     finally
                     {

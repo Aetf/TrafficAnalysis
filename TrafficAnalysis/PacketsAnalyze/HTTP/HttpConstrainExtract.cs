@@ -120,14 +120,14 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
                 return;
             }
 
+            FormatBody(rpy);
+
             // Apply constrains
             foreach (ExtractConstrain cons in ConstrainCollection)
             {
                 if (!cons.Apply(rpy))
                     return;
             }
-
-            FormatBody(rpy);
 
             DirectoryInfo gpwd = Directory.CreateDirectory(workFolder);
             DirectoryInfo pwd = gpwd.CreateSubdirectory(SelectFolder(rpy));
@@ -215,4 +215,5 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP
             return true;
         }
     }
+
 }

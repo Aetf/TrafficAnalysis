@@ -7,6 +7,7 @@ using PcapDotNet.Core;
 using PcapDotNet.Packets;
 using TrafficAnalysis.PacketsAnalyze;
 using TrafficAnalysis.PacketsAnalyze.HTTP;
+using TrafficAnalysis.PacketsAnalyze.HTTP.Constrains;
 using TrafficAnalysis.PacketsAnalyze.TCP;
 
 namespace TrafficAnalysis.DeviceDataSource
@@ -143,7 +144,15 @@ namespace TrafficAnalysis.DeviceDataSource
         // Long time operation
         public void KeywordHttpReconstruct(string saveDir, IList<string> keywords)
         {
-            HttpRecon(saveDir, null);
+            Collection<ExtractConstrain> col = new Collection<ExtractConstrain>();
+            foreach (var key in keywords)
+            {
+                col.Add(new HttpKeywordConstrain()
+                {
+                    Keyword = key
+                });
+            }
+            HttpRecon(saveDir, col);
         }
 
         public RangeStatisticsInfo Query(TimeSpan start, TimeSpan end)
@@ -212,7 +221,14 @@ namespace TrafficAnalysis.DeviceDataSource
                 HttpReconstructor httpRecon = new HttpReconstructor();
                 // Save result to files
                 HttpConstrainExtract htf = new HttpConstrainExtract(saveDir);
-
+                if (coll != null)
+                {
+                    foreach (var cons in coll)
+                    {
+                        htf.ConstrainCollection.Add(cons);
+                    }
+                }
+                
                 tcpre.ConnectionFinished += (o, e) =>
                 {
                     httpRecon.OnConnectionFinished(e.Connection);
