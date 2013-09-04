@@ -22,8 +22,10 @@ namespace TrafficAnalysis.PacketsAnalyze.HTTP.Constrains
 
             Byte[] bytes = encoding.GetBytes(Keyword);
 
-            if (rpy.Body.Locate(bytes).Length == 0)
-                return false;            
+            //if (rpy.Body.Locate(bytes).Length == 0)
+            //    return false;            
+            if (rpy.Body.BMIndexOf(bytes) == -1)
+                return false;
 
             return true;
         }
